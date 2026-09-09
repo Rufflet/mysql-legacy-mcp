@@ -1,0 +1,44 @@
+{
+  "name": "mysql-legacy-mcp",
+  "version": "0.1.0",
+  "author": {
+    "name": "Alex Ershov",
+    "url": "https://github.com/Rufflet"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rufflet/mysql-legacy-mcp.git"
+  },
+  "homepage": "https://github.com/Rufflet/mysql-legacy-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/Rufflet/mysql-legacy-mcp/issues"
+  },
+  "mcpName": "io.github.Rufflet/mysql-legacy-mcp",
+  "description": "MCP queries and schema inspection for legacy MySQL; targets MySQL 5.0–5.6 with compatibility still unverified.",
+  "license": "MIT",
+  "keywords": [
+    "mysql", "mcp", "model-context-protocol", "mcp-server", "database", "claude",
+    "mysql-legacy", "mysql-5.1", "mysql-5.5", "old-password",
+    "mysql-native-password", "eol-database", "legacy-database-migration"
+  ],
+  "bin": {
+    "mysql-legacy-mcp": "src/server.js"
+  },
+  "files": ["src/server.js", "docs/INSTALLATION.md", "README.md", "LICENSE"],
+  "type": "module",
+  "engines": {
+    "node": ">=18.14.1"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "check": "node --check src/server.js && node --check scripts/smoke-live.js",
+    "smoke:static": "node test/static-smoke.js",
+    "smoke:live": "node scripts/smoke-live.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "mysql": "^2.18.1",
+    "node-sql-parser": "^5.4.0",
+    "zod": "^3.25.0"
+  }
+}

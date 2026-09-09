@@ -1,0 +1,72 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Rufflet/mysql-legacy-mcp",
+  "title": "MySQL Legacy MCP",
+  "description": "MCP queries and schema inspection for legacy MySQL; targets MySQL 5.0–5.6 with compatibility still unverified.",
+  "repository": {
+    "url": "https://github.com/Rufflet/mysql-legacy-mcp",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "mysql-legacy-mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "MYSQL_LEGACY_HOST",
+          "description": "Database host or local tunnel endpoint",
+          "isRequired": true
+        },
+        {
+          "name": "MYSQL_LEGACY_USER",
+          "description": "Dedicated database reader account",
+          "isRequired": true
+        },
+        {
+          "name": "MYSQL_LEGACY_PASSWORD",
+          "description": "Nonempty database account password",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "MYSQL_LEGACY_PORT",
+          "description": "TCP port, 1–65535",
+          "default": "3306"
+        },
+        {
+          "name": "MYSQL_LEGACY_DATABASE",
+          "description": "Optional default database"
+        },
+        {
+          "name": "MYSQL_LEGACY_HIDE_SYSTEM_DATABASES",
+          "description": "Hide mysql and information_schema from listings",
+          "default": "true",
+          "choices": [
+            "true",
+            "false"
+          ]
+        },
+        {
+          "name": "MYSQL_LEGACY_QUERY_TIMEOUT",
+          "description": "Driver query timeout, 100–60000 milliseconds",
+          "default": "10000"
+        },
+        {
+          "name": "MYSQL_LEGACY_MAX_ROWS",
+          "description": "SELECT response row limit, 1–1000",
+          "default": "200"
+        },
+        {
+          "name": "MYSQL_LEGACY_MAX_RESULT_BYTES",
+          "description": "SELECT row-data JSON byte limit, 1024–1048576",
+          "default": "262144"
+        }
+      ]
+    }
+  ]
+}
