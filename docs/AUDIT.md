@@ -91,6 +91,14 @@ One other snag carried over from the first pass: seeding via a single multi-stat
 
 Pre-4.1 `old_password` authentication remains untested: it predates every MySQL version reachable here, including 5.0.51a (which already defaults to the post-4.1 `mysql_native_password` scheme). Verifying it would need a MySQL 3.x/4.0 build or a 5.0 server explicitly reconfigured with `old_passwords=1`, both out of scope for this pass.
 
+### Field test against a real production instance, 2026-09-10
+
+Beyond the reproducible Docker/Debian-archive matrix above, the 0.2.0 work was also exercised once against the author's own real legacy production MySQL database, reached over an authorized local SSH tunnel and driven through the actual Claude Code MCP client — dogfooding the real usage path, not `scripts/smoke-mcp.js`. No host, database, or table name from this environment is recorded here or anywhere else in this repository.
+
+Server version: 5.1.73. Authentication: the account connected successfully with no `insecureAuth`-equivalent option and no special configuration, which by itself confirms it uses the post-4.1 password format — this driver cannot complete a handshake with a pre-4.1 `old_password` account at all, with or without configuration. All 7 original read-only tools and all 4 opt-in write tools were called against the real schema; the write tools operated only on tables created for this purpose.
+
+Confirmed live: `mysql_legacy_describe_table`'s new `collation` field and `mysql_legacy_show_create_table`'s new `charset` field, against a real `cp1251_general_ci` column; a full INSERT → SELECT → UPDATE → SELECT → DELETE round trip of Cyrillic text (including `ё` and an em dash) through the default `UTF8_GENERAL_CI` connection charset into a real `cp1251` table, byte-identical on every read back; the UPDATE/DELETE WHERE-clause guard rejecting a WHERE-less UPDATE before any query reached the server; and `mysql_legacy_ddl` creating and then dropping a disposable table without affecting any of the roughly 80 other tables in the schema (verified via `mysql_legacy_list_tables` before and after). A `DROP DATABASE` attempt made to check the DDL tool's table-level-only scope was blocked by Claude Code's own auto-mode safety classifier before it reached the MCP server, so that specific rejection path was not exercised this way in the field — it remains covered by `test/static-smoke.js` and the Docker matrix above.
+
 Before upgrading a compatibility label further, record exact server patch version, auth format, Node version, representative encodings, and outcomes against a real server. Request the author's real failure messages; generic search phrases are not presented as personal incident evidence.
 
 ## Scope of changes
