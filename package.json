@@ -14,7 +14,7 @@
     "url": "https://github.com/Rufflet/mysql-legacy-mcp/issues"
   },
   "mcpName": "io.github.Rufflet/mysql-legacy-mcp",
-  "description": "MCP queries and schema inspection for legacy MySQL; targets MySQL 5.0–5.6, verified live against each version.",
+  "description": "MCP queries and schema inspection for legacy MySQL 5.0–5.6, with opt-in INSERT/UPDATE/DELETE/DDL; verified live against each version.",
   "license": "MIT",
   "keywords": [
     "mysql", "mcp", "model-context-protocol", "mcp-server", "database", "claude",
