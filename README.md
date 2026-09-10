@@ -68,6 +68,15 @@ Until the first npm release, use the checkout: run `npm ci`, then configure the 
 
 Each tested target passed all seven tools through a real MCP stdio session. Exact sources, test conditions, and the MySQL 8.0 boundary are recorded in the [compatibility audit](docs/AUDIT.md). This does not cover pre-4.1 `old_password`, custom connection charsets, TLS, or your server's exact patch level.
 
+## Compared with modern MySQL MCP servers
+
+| Server | Stated MySQL baseline | Focus |
+| --- | --- | --- |
+| `mysql-legacy-mcp` | Verified live: 5.0–5.6 | Read-only legacy schema inspection and SELECT queries |
+| [`@benborla29/mcp-server-mysql`](https://github.com/benborla/mcp-server-mysql#requirements) | 5.7+; 8.0+ recommended | Modern MySQL features such as TLS, SSH tunnels, and optional writes |
+
+This is a compatibility distinction, not a benchmark: choose the modern server for its modern-database features.
+
 ## Features
 
 - Read-only `SELECT` tool with parser checks and result-size limits
