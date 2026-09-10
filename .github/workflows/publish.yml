@@ -33,4 +33,4 @@ jobs:
       - if: inputs.publish != true
         run: npm publish --dry-run
       - if: inputs.publish == true
-        run: npm publish --provenance --access public
+        run: npm publish --access public
