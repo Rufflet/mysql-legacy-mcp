@@ -59,7 +59,7 @@ function connectionOptions() {
     user: env('MYSQL_LEGACY_USER', { required: true }),
     password: env('MYSQL_LEGACY_PASSWORD', { required: true }),
     database: env('MYSQL_LEGACY_DATABASE'),
-    connectTimeout: 10000,
+    connectTimeout: integerEnv('MYSQL_LEGACY_CONNECT_TIMEOUT', 10000, 100, 60000),
     multipleStatements: false
   };
 }
@@ -153,17 +153,137 @@ export function limitSelectRows(rows, maxRows, maxResultBytes) {
   };
 }
 
-export async function executeQuery(sql) {
-  const connection = mysql.createConnection(connectionOptions());
+function requireStatementType(sql, expectedTypes, label) {
+  if (typeof sql !== 'string' || sql.trim() === '') {
+    throw new Error('SQL must be a non-empty string');
+  }
+
+  let ast;
+  try {
+    ast = sqlParser.astify(sql, { database: 'mysql' });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown parser error';
+    throw new Error(`SQL parsing failed: ${message}`);
+  }
+
+  const statements = Array.isArray(ast) ? ast : [ast];
+  const types = Array.isArray(expectedTypes) ? expectedTypes : [expectedTypes];
+  if (statements.length !== 1 || !types.includes(statements[0]?.type)) {
+    throw new Error(`Exactly one ${label} statement is allowed`);
+  }
+
+  return statements[0];
+}
+
+const WHERE_GUARD_MESSAGE = (verb) =>
+  `${verb} without a WHERE clause is rejected. Add an explicit WHERE, or use TRUNCATE via mysql_legacy_ddl if you intend to clear the whole table.`;
+
+export function validateInsertQuery(sql) {
+  return requireStatementType(sql, 'insert', 'INSERT');
+}
+
+export function validateUpdateQuery(sql) {
+  const ast = requireStatementType(sql, 'update', 'UPDATE');
+  if (!ast.where) throw new Error(WHERE_GUARD_MESSAGE('UPDATE'));
+  return ast;
+}
+
+export function validateDeleteQuery(sql) {
+  const ast = requireStatementType(sql, 'delete', 'DELETE');
+  if (!ast.where) throw new Error(WHERE_GUARD_MESSAGE('DELETE'));
+  return ast;
+}
+
+const DDL_TYPES = ['create', 'alter', 'drop', 'truncate', 'rename'];
+const DDL_LABEL = 'CREATE, ALTER, DROP, TRUNCATE, or RENAME';
+
+export function validateDdlQuery(sql) {
+  const ast = requireStatementType(sql, DDL_TYPES, DDL_LABEL);
+  if ((ast.type === 'create' || ast.type === 'drop') && ast.keyword && ast.keyword !== 'table') {
+    throw new Error(
+      `${ast.type.toUpperCase()} ${ast.keyword.toUpperCase()} is not allowed. mysql_legacy_ddl only accepts table-level statements: CREATE/ALTER/DROP TABLE, TRUNCATE TABLE, RENAME TABLE.`
+    );
+  }
+  return ast;
+}
+
+export function parseServerVersion(raw) {
+  const match = typeof raw === 'string' ? /^(\d+)\.(\d+)\.(\d+)/.exec(raw) : null;
+  if (!match) return null;
+  return { major: Number(match[1]), minor: Number(match[2]), patch: Number(match[3]), raw };
+}
+
+export function supportsReadOnlyTransactions(version) {
+  if (!version) return false;
+  const { major, minor, patch } = version;
+  if (major !== 5) return major > 5;
+  if (minor !== 6) return minor > 6;
+  return patch >= 5;
+}
+
+let pool;
+
+function getPool() {
+  if (!pool) {
+    pool = mysql.createPool({
+      ...connectionOptions(),
+      connectionLimit: integerEnv('MYSQL_LEGACY_POOL_SIZE', 5, 1, 50)
+    });
+  }
+  return pool;
+}
+
+export async function withConnection(callback) {
+  const connection = await new Promise((resolveConn, rejectConn) => {
+    getPool().getConnection((error, conn) => (error ? rejectConn(error) : resolveConn(conn)));
+  });
+  try {
+    return await callback(connection);
+  } finally {
+    connection.release();
+  }
+}
+
+function runQuery(connection, sql) {
   const { timeout } = queryLimits();
   return new Promise((resolveQuery, rejectQuery) => {
-    connection.query({ sql, timeout }, (queryError, rows) => {
-      connection.end((endError) => {
-        if (queryError) return rejectQuery(queryError);
-        if (endError) return rejectQuery(endError);
-        return resolveQuery(rows);
-      });
-    });
+    connection.query({ sql, timeout }, (error, rows) => (error ? rejectQuery(error) : resolveQuery(rows)));
+  });
+}
+
+export async function executeQuery(sql) {
+  return withConnection((connection) => runQuery(connection, sql));
+}
+
+let cachedServerVersion;
+
+async function detectServerVersion() {
+  if (cachedServerVersion !== undefined) return cachedServerVersion;
+  const rows = await executeQuery('SELECT VERSION() AS version');
+  cachedServerVersion = parseServerVersion(rows[0]?.version);
+  return cachedServerVersion;
+}
+
+async function selectReadOnly(sql) {
+  if (booleanEnv('MYSQL_LEGACY_DISABLE_READ_ONLY_TRANSACTIONS', false)) {
+    return executeQuery(sql);
+  }
+
+  const version = await detectServerVersion();
+  if (!supportsReadOnlyTransactions(version)) {
+    return executeQuery(sql);
+  }
+
+  return withConnection(async (connection) => {
+    await runQuery(connection, 'START TRANSACTION READ ONLY');
+    try {
+      const rows = await runQuery(connection, sql);
+      await runQuery(connection, 'COMMIT');
+      return rows;
+    } catch (error) {
+      await runQuery(connection, 'ROLLBACK').catch(() => {});
+      throw error;
+    }
   });
 }
 
@@ -203,16 +323,72 @@ export function createServer() {
   }));
 
   server.registerTool('mysql_legacy_select', {
-    description: 'Executes exactly one read-only SELECT statement. SELECT INTO and locking reads are rejected; results are limited by MYSQL_LEGACY_MAX_ROWS and MYSQL_LEGACY_MAX_RESULT_BYTES.',
+    description: 'Executes exactly one read-only SELECT statement. SELECT INTO and locking reads are rejected; results are limited by MYSQL_LEGACY_MAX_ROWS and MYSQL_LEGACY_MAX_RESULT_BYTES. Runs inside a START TRANSACTION READ ONLY block on MySQL 5.6.5+ unless MYSQL_LEGACY_DISABLE_READ_ONLY_TRANSACTIONS=true.',
     inputSchema: z.object({
       sql: selectQuerySchema.describe('One MySQL 5.1-compatible SELECT statement.')
     })
   }, ({ sql }) => safely(async () => {
     validateSelectQuery(sql);
-    const rows = await executeQuery(sql);
+    const rows = await selectReadOnly(sql);
     if (!Array.isArray(rows)) throw new Error('SELECT did not return a row set');
     const { maxRows, maxResultBytes } = queryLimits();
     return limitSelectRows(rows, maxRows, maxResultBytes);
+  }));
+
+  server.registerTool('mysql_legacy_insert', {
+    description: 'Executes exactly one INSERT statement. Disabled unless MYSQL_LEGACY_ALLOW_INSERT=true.',
+    inputSchema: z.object({
+      sql: selectQuerySchema.describe('One MySQL INSERT statement.')
+    })
+  }, ({ sql }) => safely(async () => {
+    if (!booleanEnv('MYSQL_LEGACY_ALLOW_INSERT', false)) {
+      throw new Error('INSERT is disabled. Set MYSQL_LEGACY_ALLOW_INSERT=true to enable.');
+    }
+    validateInsertQuery(sql);
+    const result = await executeQuery(sql);
+    return { insertId: result.insertId, affectedRows: result.affectedRows };
+  }));
+
+  server.registerTool('mysql_legacy_update', {
+    description: 'Executes exactly one UPDATE statement. A WHERE clause is required and cannot be disabled. Disabled unless MYSQL_LEGACY_ALLOW_UPDATE=true.',
+    inputSchema: z.object({
+      sql: selectQuerySchema.describe('One MySQL UPDATE statement with a WHERE clause.')
+    })
+  }, ({ sql }) => safely(async () => {
+    if (!booleanEnv('MYSQL_LEGACY_ALLOW_UPDATE', false)) {
+      throw new Error('UPDATE is disabled. Set MYSQL_LEGACY_ALLOW_UPDATE=true to enable.');
+    }
+    validateUpdateQuery(sql);
+    const result = await executeQuery(sql);
+    return { affectedRows: result.affectedRows, changedRows: result.changedRows };
+  }));
+
+  server.registerTool('mysql_legacy_delete', {
+    description: 'Executes exactly one DELETE statement. A WHERE clause is required and cannot be disabled. Disabled unless MYSQL_LEGACY_ALLOW_DELETE=true.',
+    inputSchema: z.object({
+      sql: selectQuerySchema.describe('One MySQL DELETE statement with a WHERE clause.')
+    })
+  }, ({ sql }) => safely(async () => {
+    if (!booleanEnv('MYSQL_LEGACY_ALLOW_DELETE', false)) {
+      throw new Error('DELETE is disabled. Set MYSQL_LEGACY_ALLOW_DELETE=true to enable.');
+    }
+    validateDeleteQuery(sql);
+    const result = await executeQuery(sql);
+    return { affectedRows: result.affectedRows };
+  }));
+
+  server.registerTool('mysql_legacy_ddl', {
+    description: 'Executes exactly one table-level CREATE, ALTER, DROP, TRUNCATE, or RENAME statement. Disabled unless MYSQL_LEGACY_ALLOW_DDL=true.',
+    inputSchema: z.object({
+      sql: selectQuerySchema.describe('One MySQL table-level DDL statement.')
+    })
+  }, ({ sql }) => safely(async () => {
+    if (!booleanEnv('MYSQL_LEGACY_ALLOW_DDL', false)) {
+      throw new Error('DDL is disabled. Set MYSQL_LEGACY_ALLOW_DDL=true to enable.');
+    }
+    const ast = validateDdlQuery(sql);
+    await executeQuery(sql);
+    return { success: true, statementType: ast.type };
   }));
 
   server.registerTool('mysql_legacy_list_databases', {

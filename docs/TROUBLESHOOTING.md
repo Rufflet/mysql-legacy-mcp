@@ -27,3 +27,19 @@ Set the variable in the MCP client's server environment, not only in a separate 
 ## `SQL parsing failed` / `Exactly one SELECT statement is allowed`
 
 The SELECT tool rejects parse failures, multiple statements, non-SELECT statements, `SELECT INTO`, and locking reads. Use the dedicated schema tools for `SHOW` queries. A query accepted by the parser can still be unsupported by your specific MySQL version.
+
+## `INSERT is disabled` / `UPDATE is disabled` / `DELETE is disabled` / `DDL is disabled`
+
+`mysql_legacy_insert`, `mysql_legacy_update`, `mysql_legacy_delete`, and `mysql_legacy_ddl` are always visible in `tools/list` but reject every call until their matching flag (`MYSQL_LEGACY_ALLOW_INSERT`, `MYSQL_LEGACY_ALLOW_UPDATE`, `MYSQL_LEGACY_ALLOW_DELETE`, `MYSQL_LEGACY_ALLOW_DDL`) is set to `true` in the MCP client's server environment. See [Configuration](CONFIGURATION.md#write-operations). The MySQL account also needs the matching privilege — enabling the flag alone is not enough.
+
+## `UPDATE without a WHERE clause is rejected` / `DELETE without a WHERE clause is rejected`
+
+This guard is intentional and cannot be turned off by configuration, even with the corresponding `ALLOW` flag enabled. If you intend to clear an entire table, use `TRUNCATE TABLE` through `mysql_legacy_ddl` instead.
+
+## `... is not allowed. mysql_legacy_ddl only accepts table-level statements`
+
+`mysql_legacy_ddl` rejects `CREATE`/`DROP DATABASE`, `CREATE`/`DROP VIEW`, `CREATE`/`DROP INDEX`, and other non-table-level statements. Only `CREATE TABLE`, `ALTER TABLE`, `DROP TABLE`, `TRUNCATE TABLE`, and `RENAME TABLE` are accepted.
+
+## `mysql_legacy_select` behaves unexpectedly inside a transaction, or a proxy rejects `START TRANSACTION READ ONLY`
+
+On MySQL 5.6.5 and later, `mysql_legacy_select` wraps its query in `START TRANSACTION READ ONLY` unless `MYSQL_LEGACY_DISABLE_READ_ONLY_TRANSACTIONS=true` is set. If a proxy, middleware, or nonstandard server reports a version ≥5.6.5 but does not actually support this statement, set this flag to fall back to plain queries.
