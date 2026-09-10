@@ -22,7 +22,7 @@ Applied to https://github.com/Rufflet/mysql-legacy-mcp via `gh repo edit` on 202
 - [x] Prepare English README, compatibility table, troubleshooting, and client installation guide.
 - [x] Add MIT LICENSE, credited to Alex Ershov.
 - [x] Add executable bin mapping and Node shebang for npx.
-- [x] Use a files allowlist: src/server.js, docs/INSTALLATION.md, README.md, LICENSE (npm also includes package.json).
+- [x] Use a files allowlist: src/server.js, README.md, LICENSE, and public installation/configuration/troubleshooting/audit documentation (npm also includes package.json).
 - [x] Exclude tests, smoke scripts, environment files, prompt drafts, lockfile, and maintainer notes from publication.
 - [x] Choose 0.1.0: an initial public API and compatibility matrix are still being established; 1.0.0 would imply a stability commitment not supported by the available evidence.
 - [x] Fill real repository, homepage, bugs, and author fields; remove private: true.
@@ -32,12 +32,12 @@ Applied to https://github.com/Rufflet/mysql-legacy-mcp via `gh repo edit` on 202
 - [x] Run npm ci, npm run check, and npm run smoke:static with dependencies available.
 - [x] Run authorized live smoke checks; record the exact MySQL version and remaining coverage gaps from AUDIT.md. Done on 2026-09-10, covering all of 5.0–5.6 plus 5.7/8.0 for reference: see AUDIT.md's "Live runs" section. 5.0/5.1 have no official Docker image, so each ran as the real Debian-packaged MySQL of its era under `--platform linux/386` (amd64 builds that old segfault on this kernel's `vsyscall=none`). Only pre-4.1 `old_password` authentication remains unverified, since no reachable MySQL build implements it.
 - [x] Install the packed tarball in a clean temporary project and exercise MCP initialize / tools/list through its installed bin: seven tools, version 0.1.0.
-- [ ] Activate docs/ci.yml.example as .github/workflows/ci.yml and verify CI on Node 18.14.1, 22, and 24. GitHub rejected the initial workflow push because the active OAuth token lacks workflow scope; the draft is preserved as documentation.
+- [ ] Push the prepared `.github/workflows/ci.yml` and verify CI on Node 18.14.1, 22, and 24. `gh auth status` must show the `workflow` scope before the workflow file can be pushed.
 - [ ] Confirm the owner's npm 2FA and publishing method. npm whoami currently returns ENEEDAUTH on this machine; no npm login is configured. Never paste credentials into the repository or chat.
 - [ ] Decide whether to configure GitHub Actions OIDC trusted publishing with provenance as a separate follow-up.
 - [ ] Recheck the final tarball and release metadata before an explicitly requested publication.
 
-Validation on 2026-09-10: dependency installation, syntax checks, static smoke, packing, and clean consumer installation passed. The package contains exactly LICENSE, README.md, docs/INSTALLATION.md, package.json, and src/server.js. The installed node_modules/.bin/mysql-legacy-mcp executable completed MCP initialization and exposed exactly seven tools with server version 0.1.0. Version and engine metadata are consistent; documentation JSON snippets and local links were checked. After updating five transitive dependencies within existing version ranges, npm audit --omit=dev reports zero vulnerabilities. server.json passes its declared JSON schema and its name matches package.json mcpName.
+Validation on 2026-09-10: dependency installation, syntax checks, static smoke, packing, and clean consumer installation passed. The package contains the executable, public README, LICENSE, installation/configuration/troubleshooting/audit documentation, and package.json. The installed node_modules/.bin/mysql-legacy-mcp executable completed MCP initialization and exposed exactly seven tools with server version 0.1.0. Version and engine metadata are consistent; documentation JSON snippets and local links were checked. After updating five transitive dependencies within existing version ranges, npm audit --omit=dev reports zero vulnerabilities. server.json passes its declared JSON schema and its name matches package.json mcpName.
 
 Later the same day, live smoke checks against MySQL 5.0 through 8.0 were run separately (see AUDIT.md); those did establish real compatibility evidence across the full stated 5.0–5.6 range, plus 5.7 and 8.0 for reference. 5.0 and 5.1 have no official Docker image, so each ran as the real Debian-packaged MySQL of its era instead.
 

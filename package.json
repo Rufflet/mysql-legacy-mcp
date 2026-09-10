@@ -24,7 +24,7 @@
   "bin": {
     "mysql-legacy-mcp": "src/server.js"
   },
-  "files": ["src/server.js", "docs/INSTALLATION.md", "README.md", "LICENSE"],
+  "files": ["src/server.js", "docs/INSTALLATION.md", "docs/CONFIGURATION.md", "docs/TROUBLESHOOTING.md", "docs/AUDIT.md", "README.md", "LICENSE"],
   "type": "module",
   "engines": {
     "node": ">=18.14.1"

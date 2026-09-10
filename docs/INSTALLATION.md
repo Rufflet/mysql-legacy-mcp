@@ -6,7 +6,7 @@ Configuration sources reviewed on 2026-09-09. These examples adapt official clie
 
 Install Node.js >=18.14.1 and npm on the machine where the client launches its tools. Replace the sample connection values below with a dedicated reader account. Keep credentials out of commits and shared configuration; CLI arguments can also appear in shell history. Merge entries into existing configuration instead of replacing your other servers.
 
-This package uses stdio, not an HTTP endpoint. It does not load .env files or expose insecureAuth, charset, or SSL options. See the [configuration reference and limitations](../README.md#configuration-reference).
+This package uses stdio, not an HTTP endpoint. It does not load `.env` files or expose insecureAuth, charset, or SSL options. See [Configuration](CONFIGURATION.md) and [Troubleshooting](TROUBLESHOOTING.md).
 
 The npx examples require the first npm release to exist. Before publication, run `npm ci` in the checkout and use command `node`, with a single argument containing the absolute path to `src/server.js`, in the corresponding client configuration. Retain the same environment variables. Do not use a working-directory-relative path for GUI clients.
 
@@ -292,9 +292,9 @@ qwen mcp add mysql-legacy -e MYSQL_LEGACY_HOST=127.0.0.1 -e MYSQL_LEGACY_USER=le
 
 Restart Qwen Code after adding the server. [Official MCP guide](https://github.com/qwenlm/qwen-code/blob/main/docs/developers/tools/mcp-server.md).
 
-## Qoder (international)
+## Qoder IDE (international and CN)
 
-The current CLI is `qoder`. Its [setup guide](https://docs.qoder.com/cli/mcp-servers) confirms `qoder mcp add mysql-legacy -- npx -y mysql-legacy-mcp`, but the reviewed page does not document a credential flag. For a complete configuration, merge this into user `~/.qoder/settings.json`:
+In Qoder IDE, open **Settings → MCP**, choose **+ Add**, and enter a stdio server. The same current MCP UI documentation is used for international and CN installations; use the client UI rather than assuming a filesystem path. Paste this JSON when prompted:
 
 ```json
 {
@@ -316,7 +316,7 @@ The current CLI is `qoder`. Its [setup guide](https://docs.qoder.com/cli/mcp-ser
 }
 ```
 
-Restart Qoder, or use `/mcp reload` in an existing CLI session. [Official fields and scope reference](https://docs.qoder.com/cli/mcp-reference).
+Save the configuration and confirm the link icon appears. [Official Qoder IDE MCP guide](https://docs.qoder.com/user-guide/chat/model-context-protocol#configure-mcp-servers).
 
 ## Xiaomi MiMo Code
 
@@ -343,12 +343,13 @@ Project: `.mimocode/mimocode.jsonc`; user: `~/.config/mimocode/mimocode.jsonc` (
 
 Restart MiMo Code after saving. Paths follow the [official README](https://github.com/XiaomiMiMo/MiMo-Code#file-locations); fields follow its [current MCP schema](https://github.com/XiaomiMiMo/MiMo-Code/blob/main/packages/opencode/src/config/mcp.ts). Some inherited documentation still says OpenCode, so use the MiMo-specific filename above.
 
-## Clients awaiting verified instructions
+## Trae (ByteDance)
 
-| Client | What to use for now |
-| --- | --- |
-| Trae (ByteDance) | The [official MCP documentation](https://docs.trae.ai/ide/model-context-protocol) could not be read by the documentation fetcher. Use the client help; no unverified path or JSON is provided here. |
-| Qoder CN | Its [official IDE page](https://qoder.com.cn/ide) advertises MCP. CN-specific configuration has not yet been verified; do not assume the international instructions are identical. |
+Open Trae's MCP server manager and select **Add MCP Server**. Choose a local stdio server, set command to `npx`, arguments to `-y mysql-legacy-mcp`, and add the four `MYSQL_LEGACY_*` variables from the examples above. Use the UI supplied by your Trae version; no unverified config-file path is assumed. See Trae's [Add MCP servers guide](https://docs.trae.ai/ide/add-mcp-servers).
+
+## Pi and DeepSeek Harness
+
+Pi explicitly has no built-in MCP support; it needs a separately maintained extension, so this package does not provide an installation recipe. DeepSeek Harness is not included because it is outside this project's supported MCP-client list.
 
 ## Startup troubleshooting
 
@@ -356,4 +357,4 @@ Restart MiMo Code after saving. Paths follow the [official README](https://githu
 - If a GUI cannot find `npx`, verify its PATH or configure an absolute executable path. Windows clients may need a command wrapper; follow the client's platform documentation.
 - Do not paste TOML into JSON or use another client's root key.
 - Configure all three required credentials: host, user, and nonempty password. The database is optional but is included in the examples to make unqualified SELECT queries work.
-- Missing tools and a failed database ping are different failures. Read stderr logs for the exact error and consult [database troubleshooting](../README.md#troubleshooting).
+- Missing tools and a failed database ping are different failures. Read stderr logs for the exact error and consult [Troubleshooting](TROUBLESHOOTING.md).
