@@ -6,6 +6,7 @@ import {
   quoteIdentifier,
   schemaQueries,
   supportsReadOnlyTransactions,
+  tableCharsetFromCreateStatement,
   validateDdlQuery,
   validateDeleteQuery,
   validateInsertQuery,
@@ -106,5 +107,18 @@ assert.equal(supportsReadOnlyTransactions(parseServerVersion('5.5.62')), false);
 assert.equal(supportsReadOnlyTransactions(parseServerVersion('5.7.44-log')), true);
 assert.equal(supportsReadOnlyTransactions(parseServerVersion('8.0.46')), true);
 assert.equal(supportsReadOnlyTransactions(parseServerVersion('not-a-version')), false);
+
+// Table charset parsed out of SHOW CREATE TABLE output
+assert.equal(
+  tableCharsetFromCreateStatement("CREATE TABLE `t` (`id` int(11) NOT NULL) ENGINE=MyISAM DEFAULT CHARSET=cp1251"),
+  'cp1251'
+);
+assert.equal(
+  tableCharsetFromCreateStatement("CREATE TABLE `t` (`id` int(11) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"),
+  'utf8mb4'
+);
+assert.equal(tableCharsetFromCreateStatement('CREATE VIEW `v` AS SELECT 1'), null);
+assert.equal(tableCharsetFromCreateStatement(null), null);
+assert.equal(tableCharsetFromCreateStatement(undefined), null);
 
 console.log('Static smoke test passed.');

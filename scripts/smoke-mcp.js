@@ -124,7 +124,9 @@ async function main() {
     });
     const parsed = JSON.parse(textOf(res));
     if (!parsed.columns.length) throw new Error('no columns returned');
-    return `${parsed.columns.length} column(s)`;
+    const labelColumn = parsed.columns.find((c) => c.name === 'label');
+    if (!labelColumn?.collation) throw new Error('expected a collation on the label column');
+    return `${parsed.columns.length} column(s), label collation ${labelColumn.collation}`;
   });
 
   await check('mysql_legacy_show_create_table', async () => {
@@ -134,7 +136,8 @@ async function main() {
     });
     const parsed = JSON.parse(textOf(res));
     if (!parsed.createStatement) throw new Error('no createStatement returned');
-    return 'ok';
+    if (!parsed.charset) throw new Error('expected a parsed table charset');
+    return `charset ${parsed.charset}`;
   });
 
   await check('mysql_legacy_list_indexes', async () => {

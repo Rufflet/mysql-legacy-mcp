@@ -312,6 +312,12 @@ function tableRows(rows) {
   });
 }
 
+export function tableCharsetFromCreateStatement(createStatement) {
+  if (typeof createStatement !== 'string') return null;
+  const match = /DEFAULT CHARSET=([\w]+)/i.exec(createStatement);
+  return match ? match[1] : null;
+}
+
 export function createServer() {
   const server = new McpServer({ name: 'mysql-legacy-mcp', version: '0.2.0' });
 
@@ -414,7 +420,7 @@ export function createServer() {
   }));
 
   server.registerTool('mysql_legacy_describe_table', {
-    description: 'Lists columns with SHOW FULL COLUMNS FROM <database>.<table>. Read-only.',
+    description: 'Lists columns with SHOW FULL COLUMNS FROM <database>.<table>, including each column\'s collation. Read-only.',
     inputSchema: z.object({ database: identifierSchema, table: identifierSchema })
   }, ({ database, table }) => safely(async () => {
     const rows = await executeQuery(schemaQueries(database, table).describeTable);
@@ -428,20 +434,23 @@ export function createServer() {
         key: row.Key,
         default: row.Default,
         extra: row.Extra,
-        comment: row.Comment
+        comment: row.Comment,
+        collation: row.Collation ?? null
       }))
     };
   }));
 
   server.registerTool('mysql_legacy_show_create_table', {
-    description: 'Returns the definition from SHOW CREATE TABLE <database>.<table>. Read-only.',
+    description: 'Returns the definition from SHOW CREATE TABLE <database>.<table>, plus the table\'s default charset parsed out for convenience. Read-only.',
     inputSchema: z.object({ database: identifierSchema, table: identifierSchema })
   }, ({ database, table }) => safely(async () => {
     const row = (await executeQuery(schemaQueries(database, table).showCreateTable))[0] ?? {};
+    const createStatement = row['Create Table'] ?? row['Create View'] ?? Object.values(row)[1] ?? null;
     return {
       database,
       table,
-      createStatement: row['Create Table'] ?? row['Create View'] ?? Object.values(row)[1] ?? null
+      createStatement,
+      charset: tableCharsetFromCreateStatement(createStatement)
     };
   }));
 
