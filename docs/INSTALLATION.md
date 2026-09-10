@@ -8,7 +8,7 @@ Install Node.js >=18.14.1 and npm on the machine where the client launches its t
 
 This package uses stdio, not an HTTP endpoint. It does not load `.env` files or expose insecureAuth, charset, or SSL options. See [Configuration](CONFIGURATION.md) and [Troubleshooting](TROUBLESHOOTING.md).
 
-The npx examples require the first npm release to exist. Before publication, run `npm ci` in the checkout and use command `node`, with a single argument containing the absolute path to `src/server.js`, in the corresponding client configuration. Retain the same environment variables. Do not use a working-directory-relative path for GUI clients.
+`mysql-legacy-mcp` is published on npm, so the `npx -y mysql-legacy-mcp` examples below work as shown. To run from a local checkout instead (for example, to test an unreleased change), run `npm ci` in the checkout and use command `node`, with a single argument containing the absolute path to `src/server.js`, in the corresponding client configuration. Retain the same environment variables. Do not use a working-directory-relative path for GUI clients.
 
 After connecting, call `mysql_legacy_ping`, then list tables in the intended database. Tool discovery alone does not test database connectivity.
 

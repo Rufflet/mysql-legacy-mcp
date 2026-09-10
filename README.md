@@ -64,8 +64,6 @@ codex mcp add mysql-legacy \
 
 Use the schema required by your client. Full copy-paste instructions for Claude Desktop, Codex, VS Code, Windsurf, Gemini, Trae, Qoder, and more are in the [Installation guide](docs/INSTALLATION.md).
 
-Until the first npm release, use the checkout: run `npm ci`, then configure the client to launch `node` with the absolute path to `src/server.js`.
-
 ## Compatibility
 
 | MySQL | Status |
