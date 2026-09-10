@@ -30,7 +30,7 @@ Driver defaults verified against [mysqljs 2.18.1 source](https://github.com/mysq
 | node-sql-parser | ^5.4.0 | 5.4.0 | >=8 |
 | zod | ^3.24.2 | 3.25.76 | None declared |
 
-Package Node minimum was >=18. The locked transitive @hono/node-server requires >=18.14.1, so the package minimum now matches that floor. This is dependency metadata, not evidence of runtime testing on that Node version. Zod's declared range is now ^3.25.0 to match the SDK's ^3.25 / ^4 peer requirement. Locked dependency versions are unchanged; mysql2 is absent.
+Package Node minimum was >=18. The locked transitive @hono/node-server requires >=18.14.1, so the package minimum now matches that floor. This is dependency metadata, not evidence of runtime testing on that Node version. Zod's declared range is now ^3.25.0 to match the SDK's ^3.25 / ^4 peer requirement. Direct dependency versions are unchanged; mysql2 is absent. On 2026-09-10, five transitive dependencies were refreshed within existing ranges: @hono/node-server 1.19.17, hono 4.13.7, fast-uri 3.1.7, ip-address 10.7.0, and qs 6.16.0. The subsequent npm audit --omit=dev reported zero vulnerabilities.
 
 ## Version evidence
 

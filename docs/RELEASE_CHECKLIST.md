@@ -29,15 +29,15 @@ Applied to https://github.com/Rufflet/mysql-legacy-mcp. Authenticated GitHub API
 - [ ] Confirm exact live-tested MySQL versions and real historical error strings with the author.
 - [x] Check npm name availability: registry returned HTTP 404 on 2026-09-10. Recheck immediately before publication; this does not reserve the name.
 - [x] Create the public Rufflet/mysql-legacy-mcp repository and configure origin.
-- [ ] Run npm ci, npm run check, and npm run smoke:static in an environment with dependencies available.
+- [x] Run npm ci, npm run check, and npm run smoke:static with dependencies available.
 - [ ] Run authorized live smoke checks; record the exact MySQL version and remaining coverage gaps from AUDIT.md.
-- [ ] Install the packed tarball in a clean temporary project and exercise MCP initialize / tools/list through its installed bin.
+- [x] Install the packed tarball in a clean temporary project and exercise MCP initialize / tools/list through its installed bin: seven tools, version 0.1.0.
 - [ ] Activate docs/ci.yml.example as .github/workflows/ci.yml and verify CI on Node 18.14.1, 22, and 24. GitHub rejected the initial workflow push because the active OAuth token lacks workflow scope; the draft is preserved as documentation.
-- [ ] Confirm the owner's npm 2FA and publishing method; never paste credentials into the repository or chat.
+- [ ] Confirm the owner's npm 2FA and publishing method. npm whoami currently returns ENEEDAUTH on this machine; no npm login is configured. Never paste credentials into the repository or chat.
 - [ ] Decide whether to configure GitHub Actions OIDC trusted publishing with provenance as a separate follow-up.
 - [ ] Recheck the final tarball and release metadata before an explicitly requested publication.
 
-Validation results: syntax checks and npm pack --dry-run --json --ignore-scripts passed. The package contains exactly LICENSE, README.md, docs/INSTALLATION.md, package.json, and src/server.js. The bin shebang, package/lock/server versions, root engine constraints, and Zod ranges are consistent. Documentation JSON snippets and local links were checked. Offline dependency installation failed with ENOTCACHED for zod-to-json-schema; static smoke could not run because mysql was unavailable. No live database connection was attempted. Packing does not prove installed-bin or runtime compatibility.
+Validation on 2026-09-10: dependency installation, syntax checks, static smoke, packing, and clean consumer installation passed. The package contains exactly LICENSE, README.md, docs/INSTALLATION.md, package.json, and src/server.js. The installed node_modules/.bin/mysql-legacy-mcp executable completed MCP initialization and exposed exactly seven tools with server version 0.1.0. Version and engine metadata are consistent; documentation JSON snippets and local links were checked. No live database connection was attempted in this verification pass. After updating five transitive dependencies within existing version ranges, npm audit --omit=dev reports zero vulnerabilities. server.json passes its declared JSON schema and its name matches package.json mcpName.
 
 The [npm authentication guide](https://docs.npmjs.com/about-two-factor-authentication/) is the source of current account requirements; do not rely on unverified future cutoff dates in planning notes. [Trusted publishing](https://docs.npmjs.com/trusted-publishers/) uses OIDC credentials and can generate provenance for public packages from public GitHub repositories. It requires matching repository/workflow configuration in npm. Establish the first package publication path before assuming trusted publisher settings are available for a brand-new name.
 
