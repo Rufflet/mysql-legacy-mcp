@@ -23,11 +23,11 @@ If you are seeing `ER_NOT_SUPPORTED_AUTH_MODE`, `HANDSHAKE_INSECURE_AUTH`, `Old 
 ### Claude Code
 
 ```sh
-claude mcp add --transport stdio mysql-legacy \\
-  --env MYSQL_LEGACY_HOST=127.0.0.1 \\
-  --env MYSQL_LEGACY_USER=legacy_reader \\
-  --env MYSQL_LEGACY_PASSWORD=replace-with-a-secret \\
-  --env MYSQL_LEGACY_DATABASE=legacy_app \\
+claude mcp add --transport stdio mysql-legacy \
+  --env MYSQL_LEGACY_HOST=127.0.0.1 \
+  --env MYSQL_LEGACY_USER=legacy_reader \
+  --env MYSQL_LEGACY_PASSWORD=replace-with-a-secret \
+  --env MYSQL_LEGACY_DATABASE=legacy_app \
   -- npx -y mysql-legacy-mcp
 ```
 
