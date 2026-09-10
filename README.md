@@ -31,6 +31,17 @@ claude mcp add --transport stdio mysql-legacy \
   -- npx -y mysql-legacy-mcp
 ```
 
+### Codex
+
+```sh
+codex mcp add mysql-legacy \
+  --env MYSQL_LEGACY_HOST=127.0.0.1 \
+  --env MYSQL_LEGACY_USER=legacy_reader \
+  --env MYSQL_LEGACY_PASSWORD=replace-with-a-secret \
+  --env MYSQL_LEGACY_DATABASE=legacy_app \
+  -- npx -y mysql-legacy-mcp
+```
+
 ### Cursor and other clients
 
 ```json

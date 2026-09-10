@@ -27,7 +27,7 @@ Applied to https://github.com/Rufflet/mysql-legacy-mcp via `gh repo edit` on 202
 - [x] Choose 0.1.0: an initial public API and compatibility matrix are still being established; 1.0.0 would imply a stability commitment not supported by the available evidence.
 - [x] Bump to 0.2.0 on 2026-09-10 after adding the connection pool, the four opt-in write tools, and version-gated read-only transactions — a real expansion of the public tool surface (7 → 11 tools), warranting more than a patch release even though nothing has shipped to npm yet. `package.json`, the `McpServer` constructor in `src/server.js`, and `server.json` (top-level and package version) were all updated to match.
 - [x] Fill real repository, homepage, bugs, and author fields; remove private: true.
-- [ ] Confirm real historical failure error strings from the author's original production incident (distinct from the errors reproduced in Docker below).
+- [x] Confirm real historical failure error strings from the author's original production incident. Decided 2026-09-10: not pursued — the author can no longer reproduce the exact error text from the original incident that motivated this project. The error patterns already documented in TROUBLESHOOTING.md remain general symptom descriptions, not personal incident evidence, and are not claimed as such.
 - [x] Check npm name availability: registry returned HTTP 404 on 2026-09-10. Recheck immediately before publication; this does not reserve the name.
 - [x] Create the public Rufflet/mysql-legacy-mcp repository and configure origin.
 - [x] Run npm ci, npm run check, and npm run smoke:static with dependencies available.

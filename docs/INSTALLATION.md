@@ -17,10 +17,68 @@ After connecting, call `mysql_legacy_ping`, then list tables in the intended dat
 Run in your project (default local scope):
 
 ```sh
-claude mcp add --transport stdio mysql-legacy --env MYSQL_LEGACY_HOST=127.0.0.1 --env MYSQL_LEGACY_USER=legacy_reader --env MYSQL_LEGACY_PASSWORD=replace-with-a-secret --env MYSQL_LEGACY_DATABASE=legacy_app -- npx -y mysql-legacy-mcp
+claude mcp add --transport stdio mysql-legacy \
+  --env MYSQL_LEGACY_HOST=127.0.0.1 \
+  --env MYSQL_LEGACY_USER=legacy_reader \
+  --env MYSQL_LEGACY_PASSWORD=replace-with-a-secret \
+  --env MYSQL_LEGACY_DATABASE=legacy_app \
+  -- npx -y mysql-legacy-mcp
 ```
 
 Restart Claude Code after changes. [Official MCP guide](https://code.claude.com/docs/en/mcp).
+
+## Claude Desktop
+
+Open Settings → Developer → Edit Config. macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`; Windows: `%APPDATA%\Claude\claude_desktop_config.json`.
+
+```json
+{
+  "mcpServers": {
+    "mysql-legacy": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mysql-legacy-mcp"
+      ],
+      "env": {
+        "MYSQL_LEGACY_HOST": "127.0.0.1",
+        "MYSQL_LEGACY_USER": "legacy_reader",
+        "MYSQL_LEGACY_PASSWORD": "replace-with-a-secret",
+        "MYSQL_LEGACY_DATABASE": "legacy_app"
+      }
+    }
+  }
+}
+```
+
+Completely quit and restart Claude Desktop. [Official local-server guide](https://modelcontextprotocol.io/docs/develop/connect-local-servers).
+
+## OpenAI Codex CLI
+
+```sh
+codex mcp add mysql-legacy \
+  --env MYSQL_LEGACY_HOST=127.0.0.1 \
+  --env MYSQL_LEGACY_USER=legacy_reader \
+  --env MYSQL_LEGACY_PASSWORD=replace-with-a-secret \
+  --env MYSQL_LEGACY_DATABASE=legacy_app \
+  -- npx -y mysql-legacy-mcp
+```
+
+The equivalent user configuration in `~/.codex/config.toml` is TOML:
+
+```toml
+[mcp_servers.mysql-legacy]
+command = "npx"
+args = ["-y", "mysql-legacy-mcp"]
+
+[mcp_servers.mysql-legacy.env]
+MYSQL_LEGACY_HOST = "127.0.0.1"
+MYSQL_LEGACY_USER = "legacy_reader"
+MYSQL_LEGACY_PASSWORD = "replace-with-a-secret"
+MYSQL_LEGACY_DATABASE = "legacy_app"
+```
+
+Use `mcp_servers`, not `mcpServers`. Restart Codex after saving. [Official MCP guide](https://learn.chatgpt.com/docs/extend/mcp?surface=cli).
 
 ## Cursor
 
@@ -48,32 +106,6 @@ Project: `.cursor/mcp.json`; user: `~/.cursor/mcp.json`.
 ```
 
 Restart Cursor after saving. [Official MCP guide](https://cursor.com/docs/mcp).
-
-## Claude Desktop
-
-Open Settings → Developer → Edit Config. macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`; Windows: `%APPDATA%\Claude\claude_desktop_config.json`.
-
-```json
-{
-  "mcpServers": {
-    "mysql-legacy": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "mysql-legacy-mcp"
-      ],
-      "env": {
-        "MYSQL_LEGACY_HOST": "127.0.0.1",
-        "MYSQL_LEGACY_USER": "legacy_reader",
-        "MYSQL_LEGACY_PASSWORD": "replace-with-a-secret",
-        "MYSQL_LEGACY_DATABASE": "legacy_app"
-      }
-    }
-  }
-}
-```
-
-Completely quit and restart Claude Desktop. [Official local-server guide](https://modelcontextprotocol.io/docs/develop/connect-local-servers).
 
 ## Windsurf / Cascade
 
@@ -133,28 +165,6 @@ For a project, use `.vscode/mcp.json`. Its root key is `servers`:
 ```
 
 Restart the MCP server using MCP: List Servers, or restart VS Code after saving. [Official setup guide](https://code.visualstudio.com/docs/agent-customization/mcp-servers).
-
-## OpenAI Codex CLI
-
-```sh
-codex mcp add mysql-legacy --env MYSQL_LEGACY_HOST=127.0.0.1 --env MYSQL_LEGACY_USER=legacy_reader --env MYSQL_LEGACY_PASSWORD=replace-with-a-secret --env MYSQL_LEGACY_DATABASE=legacy_app -- npx -y mysql-legacy-mcp
-```
-
-The equivalent user configuration in `~/.codex/config.toml` is TOML:
-
-```toml
-[mcp_servers.mysql-legacy]
-command = "npx"
-args = ["-y", "mysql-legacy-mcp"]
-
-[mcp_servers.mysql-legacy.env]
-MYSQL_LEGACY_HOST = "127.0.0.1"
-MYSQL_LEGACY_USER = "legacy_reader"
-MYSQL_LEGACY_PASSWORD = "replace-with-a-secret"
-MYSQL_LEGACY_DATABASE = "legacy_app"
-```
-
-Use `mcp_servers`, not `mcpServers`. Restart Codex after saving. [Official MCP guide](https://learn.chatgpt.com/docs/extend/mcp?surface=cli).
 
 ## Gemini CLI
 
