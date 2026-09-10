@@ -106,12 +106,15 @@ This is a compatibility distinction, not a benchmark: choose the modern server f
 - [Configuration](docs/CONFIGURATION.md) — environment variables, privileges, and security limits
 - [Troubleshooting](docs/TROUBLESHOOTING.md) — authentication, TLS, encoding, and startup errors
 - [Compatibility audit](docs/AUDIT.md) — reproducible version evidence
+- [Roadmap](docs/ROADMAP.md) — deliberately deferred work and why
 
 ## Why this exists
 
 This project came from a QA/fullstack workflow that needed AI-assisted inspection of a production MySQL 5.1 database. It is a focused utility for exploring legacy schemas and preparing migrations.
 
 ## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to propose changes, run checks locally, and what evidence a compatibility claim needs. Quick start:
 
 ```sh
 npm ci

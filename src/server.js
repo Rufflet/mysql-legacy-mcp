@@ -313,7 +313,7 @@ function tableRows(rows) {
 }
 
 export function createServer() {
-  const server = new McpServer({ name: 'mysql-legacy-mcp', version: '0.1.0' });
+  const server = new McpServer({ name: 'mysql-legacy-mcp', version: '0.2.0' });
 
   server.registerTool('mysql_legacy_ping', {
     description: 'Checks the legacy MySQL connection with SELECT VERSION() AS version. Read-only.'

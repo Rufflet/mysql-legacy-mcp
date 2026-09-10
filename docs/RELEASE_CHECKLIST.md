@@ -8,13 +8,13 @@ Repository name: `mysql-legacy-mcp`, under the author's personal account.
 
 Description (under 160 characters), current as of 2026-09-10:
 
-> MCP queries and schema inspection for legacy MySQL, built around MySQL 5.1-compatible SQL. Live-verified against MySQL 5.0–5.7.
+> MCP server for legacy MySQL 5.0–5.6: schema inspection and SELECT by default, with opt-in INSERT/UPDATE/DELETE/DDL. Live-verified against MySQL 5.0–8.0.
 
-Topics, current as of 2026-09-10:
+Topics, current as of 2026-09-10 (unchanged since the write-tools addition — these target version/pain-point search terms, not feature names, so no new topics were added for INSERT/UPDATE/DELETE/DDL support; see [ROADMAP.md](ROADMAP.md) if that reasoning needs revisiting):
 
 `mysql`, `mcp`, `mcp-server`, `model-context-protocol`, `mysql-legacy`, `mysql-5-0`, `mysql-5-1`, `mysql-5-5`, `mysql-5-6`, `legacy-database`, `database-migration`, `schema-inspection`, `claude`, `nodejs`
 
-Applied to https://github.com/Rufflet/mysql-legacy-mcp via `gh repo edit` on 2026-09-09 (initial metadata) and again on 2026-09-10 (description and topics updated after live 5.0–8.0 verification; see AUDIT.md). Authenticated GitHub API access confirmed the personal account Rufflet and author name Alex Ershov. Package metadata now points to this repository and personal profile.
+Applied to https://github.com/Rufflet/mysql-legacy-mcp via `gh repo edit` on 2026-09-09 (initial metadata), 2026-09-10 (description and topics updated after live 5.0–8.0 verification; see AUDIT.md), and again on 2026-09-10 (description updated to mention the opt-in write tools). Authenticated GitHub API access confirmed the personal account Rufflet and author name Alex Ershov. Package metadata now points to this repository and personal profile.
 
 ## npm release checklist
 
@@ -23,21 +23,25 @@ Applied to https://github.com/Rufflet/mysql-legacy-mcp via `gh repo edit` on 202
 - [x] Add MIT LICENSE, credited to Alex Ershov.
 - [x] Add executable bin mapping and Node shebang for npx.
 - [x] Use a files allowlist: src/server.js, README.md, LICENSE, and public installation/configuration/troubleshooting/audit documentation (npm also includes package.json).
-- [x] Exclude tests, smoke scripts, environment files, prompt drafts, lockfile, and maintainer notes from publication.
+- [x] Exclude tests, smoke scripts, environment files, prompt drafts, lockfile, and maintainer notes from publication. CONTRIBUTING.md and docs/ROADMAP.md (added 2026-09-10) are deliberately left out of the `files` allowlist for the same reason as this checklist and AUDIT's internal notes — they're for people working on the repository, not for someone who installed the package.
 - [x] Choose 0.1.0: an initial public API and compatibility matrix are still being established; 1.0.0 would imply a stability commitment not supported by the available evidence.
+- [x] Bump to 0.2.0 on 2026-09-10 after adding the connection pool, the four opt-in write tools, and version-gated read-only transactions — a real expansion of the public tool surface (7 → 11 tools), warranting more than a patch release even though nothing has shipped to npm yet. `package.json`, the `McpServer` constructor in `src/server.js`, and `server.json` (top-level and package version) were all updated to match.
 - [x] Fill real repository, homepage, bugs, and author fields; remove private: true.
 - [ ] Confirm real historical failure error strings from the author's original production incident (distinct from the errors reproduced in Docker below).
 - [x] Check npm name availability: registry returned HTTP 404 on 2026-09-10. Recheck immediately before publication; this does not reserve the name.
 - [x] Create the public Rufflet/mysql-legacy-mcp repository and configure origin.
 - [x] Run npm ci, npm run check, and npm run smoke:static with dependencies available.
 - [x] Run authorized live smoke checks; record the exact MySQL version and remaining coverage gaps from AUDIT.md. Done on 2026-09-10, covering all of 5.0–5.6 plus 5.7/8.0 for reference: see AUDIT.md's "Live runs" section. 5.0/5.1 have no official Docker image, so each ran as the real Debian-packaged MySQL of its era under `--platform linux/386` (amd64 builds that old segfault on this kernel's `vsyscall=none`). Only pre-4.1 `old_password` authentication remains unverified, since no reachable MySQL build implements it.
-- [x] Install the packed tarball in a clean temporary project and exercise MCP initialize / tools/list through its installed bin: seven tools, version 0.1.0.
+- [x] Re-run authorized live smoke checks after adding the pool/write-tools/read-only-transaction work. Done on 2026-09-10 (second pass) against the same 5.0–8.0 matrix, both with all four `MYSQL_LEGACY_ALLOW_*` flags left disabled and with all four enabled; see AUDIT.md's second "Live runs" section, including the two bugs found and fixed during that pass.
+- [x] Install the packed tarball in a clean temporary project and exercise MCP initialize / tools/list through its installed bin: seven tools, version 0.1.0. **Stale as of the 0.2.0 changes below — see the unchecked item immediately after this one.**
+- [ ] Re-validate the packed tarball (clean install, MCP initialize, tools/list) against the current 0.2.0 tree: expect 11 tools, not seven. The 2026-09-10 validation below predates the pool/write-tools/read-only-transaction work and no longer reflects the current tool count or version.
 - [ ] Push the prepared `.github/workflows/ci.yml` and verify CI on Node 18.14.1, 22, and 24. `gh auth status` must show the `workflow` scope before the workflow file can be pushed.
 - [ ] Confirm the owner's npm 2FA and publishing method. npm whoami currently returns ENEEDAUTH on this machine; no npm login is configured. Never paste credentials into the repository or chat.
 - [ ] After the package first exists on npm, configure trusted publishing in its npmjs.com Settings → Trusted publishing section for `.github/workflows/publish.yml`. The prepared workflow is manual and defaults to npm publish --dry-run; a real release requires explicitly setting its publish input to true. npm automatically generates provenance for a public package published through GitHub Actions OIDC.
 - [ ] Recheck the final tarball and release metadata before an explicitly requested publication.
+- [ ] Add AGENTS.md and CLAUDE.md (repository conventions for AI coding agents working on this project) in a dedicated follow-up session, e.g. via an `/init`-style command — intentionally not done as part of the 0.2.0 documentation pass.
 
-Validation on 2026-09-10: dependency installation, syntax checks, static smoke, packing, and clean consumer installation passed. The package contains the executable, public README, LICENSE, installation/configuration/troubleshooting/audit documentation, and package.json. The installed node_modules/.bin/mysql-legacy-mcp executable completed MCP initialization and exposed exactly seven tools with server version 0.1.0. Version and engine metadata are consistent; documentation JSON snippets and local links were checked. After updating five transitive dependencies within existing version ranges, npm audit --omit=dev reports zero vulnerabilities. server.json passes its declared JSON schema and its name matches package.json mcpName.
+Validation on 2026-09-10: dependency installation, syntax checks, static smoke, packing, and clean consumer installation passed. The package contains the executable, public README, LICENSE, installation/configuration/troubleshooting/audit documentation, and package.json. The installed node_modules/.bin/mysql-legacy-mcp executable completed MCP initialization and exposed exactly seven tools with server version 0.1.0. Version and engine metadata are consistent; documentation JSON snippets and local links were checked. After updating five transitive dependencies within existing version ranges, npm audit --omit=dev reports zero vulnerabilities. server.json passes its declared JSON schema and its name matches package.json mcpName. **This paragraph describes the pre-0.2.0 state (seven tools) and is kept as a historical record — see the unchecked re-validation item above for what still needs to run against the current tree.**
 
 Later the same day, live smoke checks against MySQL 5.0 through 8.0 were run separately (see AUDIT.md); those did establish real compatibility evidence across the full stated 5.0–5.6 range, plus 5.7 and 8.0 for reference. 5.0 and 5.1 have no official Docker image, so each ran as the real Debian-packaged MySQL of its era instead.
 
@@ -62,7 +66,7 @@ Glama distinguishes a GitHub repository's root `glama.json` from a remote connec
 
 A server.json draft is included with a matching package.json mcpName, io.github.Rufflet/mysql-legacy-mcp. The [registry npm package guide](https://github.com/modelcontextprotocol/registry/blob/main/docs/modelcontextprotocol-io/package-types.mdx) requires this field for npm ownership verification. The draft is excluded from the npm tarball and has not been submitted.
 
-The draft mirrors version 0.1.0, npm identifier mysql-legacy-mcp, stdio transport, and actual MYSQL_LEGACY_* settings. The password is secret and required; host and user are also required, while database and tuning settings are optional. No credentials or unsupported auth/TLS/charset variables are included.
+The draft mirrors version 0.2.0, npm identifier mysql-legacy-mcp, stdio transport, and actual MYSQL_LEGACY_* settings, including the pool, write-tool, and read-only-transaction variables added alongside the 0.2.0 bump. The password is secret and required; host and user are also required, while database and tuning settings are optional. No credentials or unsupported auth/TLS/charset variables are included.
 
 ## Client documentation follow-ups
 
