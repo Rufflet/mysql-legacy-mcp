@@ -34,11 +34,35 @@ Package Node minimum was >=18. The locked transitive @hono/node-server requires 
 
 ## Version evidence
 
-MySQL 5.1 is the original intended target. 5.0, 5.5, and 5.6 are plausible candidates based on built-in SQL, not tested support claims. Even 5.1 lacks a recorded live run here. The README labels every row accordingly.
+MySQL 5.1 was the original intended target and 5.0 the oldest labeled candidate; both are now live-verified (see below). The README's compatibility table reflects this.
 
-`test/static-smoke.js` covers identifier quoting, SELECT filtering, and response truncation. `scripts/smoke-live.js` performs six direct driver checks: version, constant SELECT, database/table listings, columns, and CREATE TABLE metadata. It does not cover MCP stdio, indexes, real table SELECT, encoding round trips, or authentication variants.
+`test/static-smoke.js` covers identifier quoting, SELECT filtering, and response truncation. `scripts/smoke-live.js` performs six direct driver checks: version, constant SELECT, database/table listings, columns, and CREATE TABLE metadata.
 
-Before upgrading a compatibility label, record exact server patch version, auth format, Node version, representative encodings, and outcomes. Request the author's real failure messages; generic search phrases are not presented as personal incident evidence.
+`scripts/smoke-mcp.js` was added on 2026-09-10 to close the previously noted gap: it spawns the real server over stdio and drives every tool through the actual MCP protocol, including `list_indexes`, a real table SELECT, a UTF-8 (non-emoji) round trip, and an informational utf8mb4/emoji check. It does not cover pre-4.1 `old_password` authentication — see the note at the end of this section.
+
+### Live runs, 2026-09-10
+
+One dedicated `legacy_reader`@`%` (SELECT, SHOW VIEW) account per instance, `scripts/smoke-mcp.js` driving all 7 tools through real MCP stdio transport. Each version was a fresh instance; results were not cross-contaminated.
+
+| Version | Source | Result |
+| --- | --- | --- |
+| 5.0.51a-24+lenny5 | Real `mysql-server-5.0` package, Debian Lenny's own archived repo (`archive.debian.org`), run under `--platform linux/386` | 13/13 checks passed |
+| 5.1.73-1+deb6u1 | Real `mysql-server-5.1` package, Debian Squeeze's own archived repo, `--platform linux/386` | 13/13 checks passed |
+| 5.5.62 | Official Docker `mysql:5.5` | 13/13 checks passed |
+| 5.6.51 | Official Docker `mysql:5.6` | 13/13 checks passed |
+| 5.7.44 | Official Docker `mysql:5.7` | 13/13 checks passed |
+| 8.0.46, default `caching_sha2_password` account | Official Docker `mysql:8.0` | 3/13 passed (only `tools/list` and the two rejection checks; every DB-dependent call failed with `ER_NOT_SUPPORTED_AUTH_MODE`) |
+| 8.0.46, `mysql_native_password` account | Official Docker `mysql:8.0` | 13/13 checks passed |
+
+No official Docker image exists for MySQL 5.0 or 5.1 (`docker manifest inspect` returned "no such manifest" for both tags against `docker.io/library/mysql` and `docker.io/mysql/mysql-server`). Rather than pull an anonymous third-party image, each was installed as the genuine MySQL package from its contemporary Debian release's own archived repository — the actual OS vendor's build, just long past EOL.
+
+Getting there required diagnosing a real blocker, worth recording: on the first attempt, `apt-get update` inside `debian/eol:squeeze` (default amd64) died with "Method http has died unexpectedly" from a segfault, and even `ldd` on the same binary segfaulted. `dmesg` showed the actual cause: `vsyscall attempted with vsyscall=none`. Any x86_64 binary built before ~2013 — which includes Squeeze/Lenny's own `apt`, `ldd`, and MySQL itself — can rely on the legacy vsyscall page; this host's kernel (like most modern kernels) has vsyscalls fully disabled and cannot emulate them, so the process dies immediately on first use. This is a kernel/ABI incompatibility, not something an unofficial image (official, community, or self-built) can route around, since it strikes any period-correct amd64 binary regardless of who built it. The i386 build of the same package has no such dependency — 32-bit x86 never used vsyscalls — so running the container with `--platform linux/386` resolved it completely, with no code or kernel changes needed.
+
+One other snag: seeding via a single multi-statement heredoc into `mysql -uroot` on a fresh instance silently stopped partway through after an early failure, leaving later statements (including the reader account) never executed, with no fatal exit code to flag it. Running each statement as a separate `mysql -e` call and checking its output resolved this and should be the pattern for any future live run.
+
+Pre-4.1 `old_password` authentication remains untested: it predates every MySQL version reachable here, including 5.0.51a (which already defaults to the post-4.1 `mysql_native_password` scheme). Verifying it would need a MySQL 3.x/4.0 build or a 5.0 server explicitly reconfigured with `old_passwords=1`, both out of scope for this pass.
+
+Before upgrading a compatibility label further, record exact server patch version, auth format, Node version, representative encodings, and outcomes against a real server. Request the author's real failure messages; generic search phrases are not presented as personal incident evidence.
 
 ## Scope of changes
 

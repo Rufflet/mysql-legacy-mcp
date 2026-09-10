@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.Rufflet/mysql-legacy-mcp",
   "title": "MySQL Legacy MCP",
-  "description": "MCP for legacy MySQL 5.0–5.6; SQL and schema inspection, compatibility unverified.",
+  "description": "MCP for legacy MySQL 5.0–5.6; SQL and schema inspection, verified live against each version.",
   "repository": {
     "url": "https://github.com/Rufflet/mysql-legacy-mcp",
     "source": "github"

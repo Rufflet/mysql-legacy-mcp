@@ -16,14 +16,18 @@ The error phrases above are diagnostic search terms, not a record of failures re
 
 ## MySQL compatibility
 
-No live test results are recorded in this repository. A live smoke script exists; its presence is not evidence that a version passed.
+Live-tested on 2026-09-10, using a dedicated reader account, driving every tool (including `mysql_legacy_select` and `mysql_legacy_list_indexes`) through the real MCP stdio protocol via `scripts/smoke-mcp.js`. 5.5–8.0 ran against official `mysql:*` Docker images; 5.0 and 5.1 have no official Docker image, so each ran as the genuine MySQL package from its contemporary Debian release's own archived repository (Debian Lenny for 5.0, Debian Squeeze for 5.1), under an i386 container — pre-2013 amd64 Linux binaries rely on the legacy vsyscall ABI, which modern kernels (this host included) no longer emulate, so the 32-bit build was used instead of a random unofficial amd64 image. Not a substitute for testing against your own server's exact patch version, encoding, and authentication configuration.
 
 | MySQL version | Status | Basis and limitations |
 | --- | --- | --- |
-| 5.0 | Untested; likely compatible with appropriate authentication | Built-in tools use older SELECT / SHOW syntax. No patch-level verification; pre-4.1 password authentication is disabled. |
-| 5.1 | Intended target; live verification pending | Original implementation targets 5.1. Exact version, authentication, and encoding results need recording. |
-| 5.5 | Untested; likely compatible | No newer server features required by built-in tools; same authentication and transport limits. |
-| 5.6 | Untested; likely compatible | Same SQL approach; user-supplied queries must still suit the server. |
+| 5.0 | Verified: MySQL 5.0.51a (Debian Lenny `mysql-server-5.0` package, i386) | All 7 tools passed, including a real table SELECT, `list_indexes`, and a UTF-8 (non-emoji) round trip. Predates utf8mb4 entirely. |
+| 5.1 | Verified: MySQL 5.1.73 (Debian Squeeze `mysql-server-5.1` package, i386) | Original implementation's intended target. Same coverage as 5.0; default `mysql_native_password` authentication (the post-4.1 scheme) works unmodified. |
+| 5.5 | Verified: MySQL 5.5.62 (Docker `mysql:5.5`) | Same coverage; first version in this range with utf8mb4 available server-side (not requested by this driver). |
+| 5.6 | Verified: MySQL 5.6.51 (Docker `mysql:5.6`) | Same coverage as 5.5. `CREATE USER IF NOT EXISTS` is unavailable server-side pre-5.7; unrelated to this package. |
+| 5.7 | Verified: MySQL 5.7.44 (Docker `mysql:5.7`) — outside the stated 5.0–5.6 target range, included for reference | Same coverage as 5.5/5.6; default `mysql_native_password` authentication works unmodified. |
+| 8.0 | Verified boundary, not a supported target | With the default `caching_sha2_password` account, every query fails immediately with `ER_NOT_SUPPORTED_AUTH_MODE` (MySQL 8.0.46). Switching the account to `mysql_native_password` restores all 7 tools to passing — confirming the workaround described in [Troubleshooting](#troubleshooting). |
+
+A utf8mb4 (emoji) column was also queried on every tested version (a plain `utf8` table on 5.0/5.1, which never had utf8mb4 to test): the driver's `UTF8_GENERAL_CI` connection charset consistently returns `?` in place of non-BMP characters rather than erroring or corrupting the rest of the row. This is a documented limitation, not a passing/failing check. Pre-4.1 `old_password` authentication remains untested: no reachable MySQL build in this environment still implements it.
 
 There is no version negotiation or SQL rewriting. `mysql_legacy_ping` reports `VERSION()`; it does not enable version-specific behavior. Modern authentication such as `caching_sha2_password` is outside this package's intended scope.
 
@@ -31,7 +35,7 @@ There is no version negotiation or SQL rewriting. `mysql_legacy_ping` reports `V
 
 | Server | Minimum supported MySQL version | Focus |
 | --- | --- | --- |
-| `mysql-legacy-mcp` | Not established by live tests; targets 5.0–5.6 | SELECT-only tools and SHOW-based schema inspection; no TLS or auth configuration |
+| `mysql-legacy-mcp` | Verified live down to 5.0 (see [MySQL compatibility](#mysql-compatibility)) | SELECT-only tools and SHOW-based schema inspection; no TLS or auth configuration |
 | `@benborla29/mcp-server-mysql` | 5.7+; 8.0+ recommended | Broader features including TLS, SSH tunneling, and optional writes |
 
 Based on the [other project's requirements](https://github.com/benborla/mcp-server-mysql#requirements), reviewed on 2026-09-09. This is not a benchmark or a claim about every MySQL MCP server.
@@ -163,7 +167,9 @@ npm run check
 npm run smoke:static
 ```
 
-For a database you are authorized to inspect, set the connection variables plus `MYSQL_LEGACY_DATABASE` and `MYSQL_LEGACY_SMOKE_TABLE`, then run `npm run smoke:live`. Record the exact version, authentication, encodings, and results; redact credentials and application data. The existing live script reads metadata and performs a constant SELECT; it does not test MCP transport, index listing, or a SELECT against an application table.
+For a database you are authorized to inspect, set the connection variables plus `MYSQL_LEGACY_DATABASE` and `MYSQL_LEGACY_SMOKE_TABLE`, then run `npm run smoke:live`. Record the exact version, authentication, encodings, and results; redact credentials and application data. That script reads metadata and performs a constant SELECT through the driver directly, not through MCP.
+
+`npm run smoke:mcp` covers the remaining gap: it spawns the real server over stdio and drives every tool, including `mysql_legacy_select` against an application table, `mysql_legacy_list_indexes`, and a UTF-8 round trip, through the actual MCP protocol. It needs two tables beyond a plain reader account; see the schema requirements documented at the top of `scripts/smoke-mcp.js`.
 
 Include a minimal reproducer with compatibility reports. Tie new compatibility claims to recorded evidence.
 

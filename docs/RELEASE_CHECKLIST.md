@@ -6,15 +6,15 @@ Status as of 2026-09-10: public GitHub repository created; npm and registry rele
 
 Repository name: `mysql-legacy-mcp`, under the author's personal account.
 
-Description (under 160 characters):
+Description (under 160 characters), current as of 2026-09-10:
 
-> MCP queries and schema inspection for legacy MySQL, built around MySQL 5.1-compatible SQL. MySQL 5.0–5.6 compatibility remains unverified.
+> MCP queries and schema inspection for legacy MySQL, built around MySQL 5.1-compatible SQL. Live-verified against MySQL 5.0–5.7.
 
-Topics:
+Topics, current as of 2026-09-10:
 
-`mysql`, `mcp`, `mcp-server`, `model-context-protocol`, `mysql-legacy`, `mysql-5-1`, `mysql-5-5`, `legacy-database`, `database-migration`, `schema-inspection`, `claude`, `nodejs`
+`mysql`, `mcp`, `mcp-server`, `model-context-protocol`, `mysql-legacy`, `mysql-5-0`, `mysql-5-1`, `mysql-5-5`, `mysql-5-6`, `legacy-database`, `database-migration`, `schema-inspection`, `claude`, `nodejs`
 
-Applied to https://github.com/Rufflet/mysql-legacy-mcp. Authenticated GitHub API access confirmed the personal account Rufflet and author name Alex Ershov. Package metadata now points to this repository and personal profile.
+Applied to https://github.com/Rufflet/mysql-legacy-mcp via `gh repo edit` on 2026-09-09 (initial metadata) and again on 2026-09-10 (description and topics updated after live 5.0–8.0 verification; see AUDIT.md). Authenticated GitHub API access confirmed the personal account Rufflet and author name Alex Ershov. Package metadata now points to this repository and personal profile.
 
 ## npm release checklist
 
@@ -26,18 +26,20 @@ Applied to https://github.com/Rufflet/mysql-legacy-mcp. Authenticated GitHub API
 - [x] Exclude tests, smoke scripts, environment files, prompt drafts, lockfile, and maintainer notes from publication.
 - [x] Choose 0.1.0: an initial public API and compatibility matrix are still being established; 1.0.0 would imply a stability commitment not supported by the available evidence.
 - [x] Fill real repository, homepage, bugs, and author fields; remove private: true.
-- [ ] Confirm exact live-tested MySQL versions and real historical error strings with the author.
+- [ ] Confirm real historical failure error strings from the author's original production incident (distinct from the errors reproduced in Docker below).
 - [x] Check npm name availability: registry returned HTTP 404 on 2026-09-10. Recheck immediately before publication; this does not reserve the name.
 - [x] Create the public Rufflet/mysql-legacy-mcp repository and configure origin.
 - [x] Run npm ci, npm run check, and npm run smoke:static with dependencies available.
-- [ ] Run authorized live smoke checks; record the exact MySQL version and remaining coverage gaps from AUDIT.md.
+- [x] Run authorized live smoke checks; record the exact MySQL version and remaining coverage gaps from AUDIT.md. Done on 2026-09-10, covering all of 5.0–5.6 plus 5.7/8.0 for reference: see AUDIT.md's "Live runs" section. 5.0/5.1 have no official Docker image, so each ran as the real Debian-packaged MySQL of its era under `--platform linux/386` (amd64 builds that old segfault on this kernel's `vsyscall=none`). Only pre-4.1 `old_password` authentication remains unverified, since no reachable MySQL build implements it.
 - [x] Install the packed tarball in a clean temporary project and exercise MCP initialize / tools/list through its installed bin: seven tools, version 0.1.0.
 - [ ] Activate docs/ci.yml.example as .github/workflows/ci.yml and verify CI on Node 18.14.1, 22, and 24. GitHub rejected the initial workflow push because the active OAuth token lacks workflow scope; the draft is preserved as documentation.
 - [ ] Confirm the owner's npm 2FA and publishing method. npm whoami currently returns ENEEDAUTH on this machine; no npm login is configured. Never paste credentials into the repository or chat.
 - [ ] Decide whether to configure GitHub Actions OIDC trusted publishing with provenance as a separate follow-up.
 - [ ] Recheck the final tarball and release metadata before an explicitly requested publication.
 
-Validation on 2026-09-10: dependency installation, syntax checks, static smoke, packing, and clean consumer installation passed. The package contains exactly LICENSE, README.md, docs/INSTALLATION.md, package.json, and src/server.js. The installed node_modules/.bin/mysql-legacy-mcp executable completed MCP initialization and exposed exactly seven tools with server version 0.1.0. Version and engine metadata are consistent; documentation JSON snippets and local links were checked. No live database connection was attempted in this verification pass. After updating five transitive dependencies within existing version ranges, npm audit --omit=dev reports zero vulnerabilities. server.json passes its declared JSON schema and its name matches package.json mcpName.
+Validation on 2026-09-10: dependency installation, syntax checks, static smoke, packing, and clean consumer installation passed. The package contains exactly LICENSE, README.md, docs/INSTALLATION.md, package.json, and src/server.js. The installed node_modules/.bin/mysql-legacy-mcp executable completed MCP initialization and exposed exactly seven tools with server version 0.1.0. Version and engine metadata are consistent; documentation JSON snippets and local links were checked. After updating five transitive dependencies within existing version ranges, npm audit --omit=dev reports zero vulnerabilities. server.json passes its declared JSON schema and its name matches package.json mcpName.
+
+Later the same day, live smoke checks against MySQL 5.0 through 8.0 were run separately (see AUDIT.md); those did establish real compatibility evidence across the full stated 5.0–5.6 range, plus 5.7 and 8.0 for reference. 5.0 and 5.1 have no official Docker image, so each ran as the real Debian-packaged MySQL of its era instead.
 
 The [npm authentication guide](https://docs.npmjs.com/about-two-factor-authentication/) is the source of current account requirements; do not rely on unverified future cutoff dates in planning notes. [Trusted publishing](https://docs.npmjs.com/trusted-publishers/) uses OIDC credentials and can generate provenance for public packages from public GitHub repositories. It requires matching repository/workflow configuration in npm. Establish the first package publication path before assuming trusted publisher settings are available for a brand-new name.
 
