@@ -333,7 +333,7 @@ export function tableCharsetFromCreateStatement(createStatement) {
 }
 
 export function createServer() {
-  const server = new McpServer({ name: 'mysql-legacy-mcp', version: '0.2.0' });
+  const server = new McpServer({ name: 'mysql-legacy-mcp', version: '0.2.1' });
 
   server.registerTool('mysql_legacy_ping', {
     description: 'Checks the MySQL connection with SELECT VERSION() AS version and returns {connected, version}. Call this first after connecting. For schema use mysql_legacy_list_tables; for row data use mysql_legacy_select.',
