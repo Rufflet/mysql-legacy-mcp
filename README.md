@@ -1,5 +1,10 @@
 # MySQL Legacy MCP
 
+[![CI](https://github.com/Rufflet/mysql-legacy-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/Rufflet/mysql-legacy-mcp/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/mysql-legacy-mcp.svg)](https://www.npmjs.com/package/mysql-legacy-mcp)
+[![License: MIT](https://img.shields.io/github/license/Rufflet/mysql-legacy-mcp)](https://github.com/Rufflet/mysql-legacy-mcp/blob/main/LICENSE)
+[![Glama](https://glama.ai/mcp/servers/@Rufflet/mysql-legacy-mcp/badges/score.svg)](https://glama.ai/mcp/servers/@Rufflet/mysql-legacy-mcp)
+
 MCP server for legacy MySQL 5.0–5.6 databases through stdio. The package is on npm as `mysql-legacy-mcp` and in the [official MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.Rufflet/mysql-legacy-mcp) as `io.github.Rufflet/mysql-legacy-mcp`.
 
 It uses MySQL 5.1-compatible SQL and `SHOW` metadata queries. Live MCP tests cover MySQL 5.0.51a, 5.1.73, 5.5.62, and 5.6.51. It is deliberately small: read-only by default, with INSERT/UPDATE/DELETE/DDL as opt-in tools disabled unless explicitly enabled; no TLS configuration, and no custom authentication or charset options.
