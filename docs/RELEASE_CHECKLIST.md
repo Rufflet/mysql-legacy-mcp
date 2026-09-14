@@ -4,7 +4,9 @@ Status as of 2026-09-14: `mysql-legacy-mcp@0.2.0` is published on npm and in the
 
 ## GitHub metadata proposal
 
-Repository name: `mysql-legacy-mcp`, under the author's personal account.
+Repository / npm / `npx` identifier: `mysql-legacy-mcp`, under the author's personal account.
+
+Display title: **MySQL Legacy MCP** (`server.json` `title`). Use this in README headings and in directories that list product names (for example claudedirectory `title`, awesome-mysql link text). Lists that already use `owner/repo` as the link text (Awesome MCP Servers, Awesome MCP ZH) should keep `Rufflet/mysql-legacy-mcp`. The official registry id stays `io.github.Rufflet/mysql-legacy-mcp`. Do not rename the npm package to match the display title.
 
 Description (under 160 characters), current as of 2026-09-10:
 
@@ -58,11 +60,15 @@ Start after a stable npm release, only on a separate explicit request. None of t
 | --- | --- | --- |
 | [Official MCP Registry](https://github.com/modelcontextprotocol/registry) | Published 2026-09-14 | `io.github.Rufflet/mysql-legacy-mcp` version `0.2.0` is [active](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.Rufflet%2Fmysql-legacy-mcp/versions/latest). Future releases: `mcp-publisher publish` locally, or `gh workflow run "Publish npm package" --ref main -f publish=true` (OIDC on `main` via `publish.yml`). The `server.json` `description` field is capped at 100 characters by the 2025-12-11 schema. |
 | [Glama](https://glama.ai/mcp/faq) | Claimed 2026-09-14 | Listing [mysql-legacy-mcp by Rufflet](https://glama.ai/mcp/servers/@Rufflet/mysql-legacy-mcp); GitHub login verified ownership. Root `glama.json` names maintainer `Rufflet`. Do not add `/.well-known/glama.json`. Profile completeness was 83% after the claim: "No related servers" is an admin-UI link list (not a repo file); "No recent usage" counts only Glama Gateway / Try in Browser, which needs a Glama-hosted release plus database credentials, and is not pursued. |
-| [PulseMCP](https://www.pulsemcp.com/api) | Awaiting ingest | No listing found on 2026-09-14. PulseMCP ingests the official registry; expect the entry within about a week. Optional expedite: email hello@pulsemcp.com with the namespace `io.github.Rufflet/mysql-legacy-mcp`, or use [pulsemcp.com/submit](https://www.pulsemcp.com/submit) if it has not appeared. |
-| [Smithery](https://smithery.ai/docs/build/publish) | Not applicable now | Current publish routes are a hosted Streamable HTTP URL or a local `.mcpb` bundle. This project ships npm/stdio only; hosting and MCPB are separate scoped tasks, same as the Docker catalog. |
+| [PulseMCP](https://www.pulsemcp.com/api) | Awaiting ingest | No listing on [pulsemcp.com/servers?q=mysql](https://www.pulsemcp.com/servers?q=mysql) as of 2026-09-14. PulseMCP ingests the official registry (typically up to about a week). Expedite in a browser: [pulsemcp.com/submit](https://www.pulsemcp.com/submit), or email hello@pulsemcp.com with `io.github.Rufflet/mysql-legacy-mcp`. |
+| [Smithery](https://smithery.ai/docs/build/publish) | Not applicable now | Current publish routes are (1) a public Streamable HTTP URL or (2) a local `.mcpb` bundle. `npx @smithery/cli install` listings such as designcomputer's require extra packaging those projects added: HTTP/SSE transport, a Dockerfile, and `smithery.yaml` `runtime: container` so Smithery/Fronteir can host the process. This project is local stdio against a user-supplied MySQL (often via a tunnel); hosting would mean putting `MYSQL_LEGACY_*` on someone else's cloud. MCPB and HTTP hosting remain separately scoped, same as the Docker catalog. |
 | [mcp.so](https://mcp.so/) | Submitted 2026-09-14 | Comment posted on [chatmcp/mcpso#1](https://github.com/chatmcp/mcpso/issues/1#issuecomment-5661083600); listing not yet confirmed live. Optional extra: the site's [Submit](https://mcp.so/submit) form. |
+| [mcpservers.org](https://mcpservers.org/submit) | Not done | Browser form at [mcpservers.org/submit](https://mcpservers.org/submit) (free review up to two weeks). Optional Official MCP Registry name: `io.github.Rufflet/mysql-legacy-mcp`. |
+| [mcpmarket.com](https://mcpmarket.com/server/mysql-legacy) | Aggregator scrape | Page appeared without a submission, likely from GitHub/npm/registry ingest. Copy is stale (SELECT-only; overstates auth-error coverage). No claim flow found; leave as-is unless a maintainer edit appears. |
 | [Awesome MCP Servers](https://github.com/punkpeye/awesome-mcp-servers) | PR opened | https://github.com/punkpeye/awesome-mcp-servers/pull/14378 |
 | [Awesome MCP ZH](https://github.com/yzfly/Awesome-MCP-ZH) | PR opened | https://github.com/yzfly/Awesome-MCP-ZH/pull/575 |
+| [awesome-mysql](https://github.com/shlomi-noach/awesome-mysql) | Withdrawn 2026-09-14 | Closed https://github.com/shlomi-noach/awesome-mysql/pull/202. Do not open a replacement until explicitly requested. If resubmitted, use display title **MySQL Legacy MCP** as the link text, matching neighboring product-name entries. |
+| [claudedirectory](https://github.com/tmcpa/claudedirectory) | PR opened | https://github.com/tmcpa/claudedirectory/pull/163 |
 | Docker MCP Catalog | Not applicable now | No Docker image is provided; reconsider only if one is created in a separately scoped task. |
 
 Glama distinguishes a GitHub repository's root `glama.json` from a remote connector's `/.well-known/glama.json`. This npm/stdio project is a repository listing, not a hosted connector. See [Glama's repository metadata explanation](https://glama.ai/blog/2025-07-08-what-is-glamajson). Do not create a remote ownership challenge file for this package.

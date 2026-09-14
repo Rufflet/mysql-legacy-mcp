@@ -1,4 +1,4 @@
-# mysql-legacy-mcp
+# MySQL Legacy MCP
 
 MCP server for legacy MySQL 5.0–5.6 databases through stdio. The package is on npm as `mysql-legacy-mcp` and in the [official MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.Rufflet/mysql-legacy-mcp) as `io.github.Rufflet/mysql-legacy-mcp`.
 
@@ -17,6 +17,16 @@ If you are seeing `ER_NOT_SUPPORTED_AUTH_MODE`, `HANDSHAKE_INSECURE_AUTH`, `Old 
 - Node.js 18.14.1 or later
 - npm
 - A dedicated MySQL account with only the required read and metadata privileges
+
+## Where it is listed
+
+Installation is always local stdio via npm (`npx -y mysql-legacy-mcp`). Directory pages do not make that faster; they are discovery indexes. The [official MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.Rufflet/mysql-legacy-mcp) is the machine-readable source (`io.github.Rufflet/mysql-legacy-mcp`) that aggregators ingest, including env-var metadata from `server.json`. Clients that speak that registry can pre-fill configuration from it.
+
+- [npm](https://www.npmjs.com/package/mysql-legacy-mcp)
+- [Official MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.Rufflet/mysql-legacy-mcp)
+- [Glama](https://glama.ai/mcp/servers/@Rufflet/mysql-legacy-mcp)
+
+Maintainer submission status for other directories is in [docs/RELEASE_CHECKLIST.md](docs/RELEASE_CHECKLIST.md).
 
 ## Quick install
 
