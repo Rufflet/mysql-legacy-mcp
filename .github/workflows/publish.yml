@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       publish:
-        description: "Publish to npm (off runs a safe dry-run only)"
+        description: "Publish to npm and the official MCP Registry (off runs a safe dry-run only)"
         required: true
         default: false
         type: boolean
@@ -30,7 +30,16 @@ jobs:
       - run: npm run check
       - run: npm run smoke:static
       - run: npm pack --dry-run --ignore-scripts
+      - name: Install mcp-publisher
+        run: |
+          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+      - run: ./mcp-publisher validate
       - if: inputs.publish != true
         run: npm publish --dry-run
       - if: inputs.publish == true
         run: npm publish --access public
+      - if: inputs.publish == true
+        name: Publish to MCP Registry
+        run: |
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish

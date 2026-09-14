@@ -2,10 +2,12 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.Rufflet/mysql-legacy-mcp",
   "title": "MySQL Legacy MCP",
-  "description": "MCP server for legacy MySQL 5.0–5.6: schema inspection and SELECT by default, with opt-in INSERT/UPDATE/DELETE/DDL. Live-verified against MySQL 5.0–8.0.",
+  "description": "Inspect and query MySQL 5.0–5.6; opt-in INSERT/UPDATE/DELETE/DDL. Live-verified 5.0–8.0.",
+  "websiteUrl": "https://github.com/Rufflet/mysql-legacy-mcp",
   "repository": {
     "url": "https://github.com/Rufflet/mysql-legacy-mcp",
-    "source": "github"
+    "source": "github",
+    "id": "1363285083"
   },
   "version": "0.2.0",
   "packages": [

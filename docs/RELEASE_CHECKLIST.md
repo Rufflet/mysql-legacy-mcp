@@ -1,6 +1,6 @@
 # Release preparation
 
-Status as of 2026-09-10: `mysql-legacy-mcp@0.2.0` is published on npm; the official MCP registry and directory listings in "Phase 2" below have not been submitted. This maintainer checklist is excluded from the npm tarball.
+Status as of 2026-09-14: `mysql-legacy-mcp@0.2.0` is published on npm and in the official MCP Registry as `io.github.Rufflet/mysql-legacy-mcp`. Remaining Phase 2 directory work is in the table below. This maintainer checklist is excluded from the npm tarball.
 
 ## GitHub metadata proposal
 
@@ -56,20 +56,20 @@ Start after a stable npm release, only on a separate explicit request. None of t
 
 | Destination | Status | Next action |
 | --- | --- | --- |
-| [Official MCP Registry](https://github.com/modelcontextprotocol/registry) | Draft prepared; not published | server.json uses io.github.Rufflet/mysql-legacy-mcp. After npm release, authenticate ownership and submit that version on explicit request. |
-| [Glama](https://glama.ai/mcp/faq) | Not done | Submit the public GitHub repository; follow the repository ownership flow. |
-| [PulseMCP](https://www.pulsemcp.com/api) | Not done | Check for an existing imported listing before submitting manually. No fixed indexing delay is assumed. |
-| [Smithery](https://smithery.ai/docs/build/publish) | Not done | Review the current listing route and its requirements for a local stdio package before submission; hosting is a separate decision. |
-| [mcp.so](https://mcp.so/) | Not done | Follow its current submission route and link the published package and repository. |
-| [Awesome MCP Servers](https://github.com/punkpeye/awesome-mcp-servers) | Not done | Read contribution rules and propose a factual entry by PR when requested. |
-| [Awesome MCP ZH](https://github.com/yzfly/Awesome-MCP-ZH) | Not done | Read contribution rules and prepare an appropriate entry when requested. |
+| [Official MCP Registry](https://github.com/modelcontextprotocol/registry) | Published 2026-09-14 | `io.github.Rufflet/mysql-legacy-mcp` version `0.2.0` is [active](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.Rufflet%2Fmysql-legacy-mcp/versions/latest). Future releases: `mcp-publisher publish` locally, or `gh workflow run "Publish npm package" --ref main -f publish=true` (OIDC after this tree is on `main`). The `server.json` `description` field is capped at 100 characters by the 2025-12-11 schema. |
+| [Glama](https://glama.ai/mcp/faq) | Indexed; claim pending | Auto-indexed from GitHub as [mysql-legacy-mcp by Rufflet](https://glama.ai/mcp/servers/@Rufflet/mysql-legacy-mcp). Root `glama.json` names maintainer `Rufflet`. After that file is on `main`, sign in at Glama and use Claim ownership (GitHub identity). Do not add `/.well-known/glama.json`. |
+| [PulseMCP](https://www.pulsemcp.com/api) | Awaiting ingest | No listing found on 2026-09-14. PulseMCP ingests the official registry; expect the entry within about a week. Optional expedite: email hello@pulsemcp.com with the namespace `io.github.Rufflet/mysql-legacy-mcp`, or use [pulsemcp.com/submit](https://www.pulsemcp.com/submit) if it has not appeared. |
+| [Smithery](https://smithery.ai/docs/build/publish) | Not applicable now | Current publish routes are a hosted Streamable HTTP URL or a local `.mcpb` bundle. This project ships npm/stdio only; hosting and MCPB are separate scoped tasks, same as the Docker catalog. |
+| [mcp.so](https://mcp.so/) | Submitted 2026-09-14 | Comment posted on [chatmcp/mcpso#1](https://github.com/chatmcp/mcpso/issues/1#issuecomment-5661083600); listing not yet confirmed live. Optional extra: the site's [Submit](https://mcp.so/submit) form. |
+| [Awesome MCP Servers](https://github.com/punkpeye/awesome-mcp-servers) | PR opened | https://github.com/punkpeye/awesome-mcp-servers/pull/14378 |
+| [Awesome MCP ZH](https://github.com/yzfly/Awesome-MCP-ZH) | PR opened | https://github.com/yzfly/Awesome-MCP-ZH/pull/575 |
 | Docker MCP Catalog | Not applicable now | No Docker image is provided; reconsider only if one is created in a separately scoped task. |
 
 Glama distinguishes a GitHub repository's root `glama.json` from a remote connector's `/.well-known/glama.json`. This npm/stdio project is a repository listing, not a hosted connector. See [Glama's repository metadata explanation](https://glama.ai/blog/2025-07-08-what-is-glamajson). Do not create a remote ownership challenge file for this package.
 
-A server.json draft is included with a matching package.json mcpName, io.github.Rufflet/mysql-legacy-mcp. The [registry npm package guide](https://github.com/modelcontextprotocol/registry/blob/main/docs/modelcontextprotocol-io/package-types.mdx) requires this field for npm ownership verification. The draft is excluded from the npm tarball and has not been submitted.
+`server.json` matches package.json `mcpName`, `io.github.Rufflet/mysql-legacy-mcp`. The [registry npm package guide](https://github.com/modelcontextprotocol/registry/blob/main/docs/modelcontextprotocol-io/package-types.mdx) requires this field for npm ownership verification. The file is excluded from the npm tarball.
 
-The draft mirrors version 0.2.0, npm identifier mysql-legacy-mcp, stdio transport, and actual MYSQL_LEGACY_* settings, including the pool, write-tool, and read-only-transaction variables added alongside the 0.2.0 bump. The password is secret and required; host and user are also required, while database and tuning settings are optional. No credentials or unsupported auth/TLS/charset variables are included.
+It mirrors version 0.2.0, npm identifier mysql-legacy-mcp, stdio transport, and actual MYSQL_LEGACY_* settings, including the pool, write-tool, and read-only-transaction variables added alongside the 0.2.0 bump. The password is secret and required; host and user are also required, while database and tuning settings are optional. No credentials or unsupported auth/TLS/charset variables are included. On 2026-09-14 the description was shortened to 88 characters to satisfy the schema `maxLength` of 100, and `websiteUrl` plus the GitHub repository numeric `id` were added.
 
 ## Client documentation follow-ups
 
