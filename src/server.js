@@ -12,7 +12,21 @@ const { Parser } = SqlParser;
 const sqlParser = new Parser();
 const SYSTEM_DATABASES = new Set(['information_schema', 'mysql']);
 const identifierSchema = z.string().min(1).max(64);
+const databaseIdentifier = identifierSchema.describe('MySQL database name, 1–64 characters.');
+const tableIdentifier = identifierSchema.describe('MySQL table or view name, 1–64 characters.');
 const selectQuerySchema = z.string().min(1).max(100000);
+const readOnlyAnnotations = {
+  readOnlyHint: true,
+  destructiveHint: false,
+  idempotentHint: true,
+  openWorldHint: true
+};
+const mutatingAnnotations = {
+  readOnlyHint: false,
+  destructiveHint: true,
+  idempotentHint: false,
+  openWorldHint: true
+};
 
 function env(name, { required = false, defaultValue } = {}) {
   const value = process.env[name];
@@ -322,14 +336,16 @@ export function createServer() {
   const server = new McpServer({ name: 'mysql-legacy-mcp', version: '0.2.0' });
 
   server.registerTool('mysql_legacy_ping', {
-    description: 'Checks the legacy MySQL connection with SELECT VERSION() AS version. Read-only.'
+    description: 'Checks the MySQL connection with SELECT VERSION() AS version and returns {connected, version}. Call this first after connecting. For schema use mysql_legacy_list_tables; for row data use mysql_legacy_select.',
+    annotations: readOnlyAnnotations
   }, () => safely(async () => {
     const rows = await executeQuery('SELECT VERSION() AS version');
     return { connected: true, version: rows[0]?.version ?? null };
   }));
 
   server.registerTool('mysql_legacy_select', {
-    description: 'Executes exactly one read-only SELECT statement. SELECT INTO and locking reads are rejected; results are limited by MYSQL_LEGACY_MAX_ROWS and MYSQL_LEGACY_MAX_RESULT_BYTES. Runs inside a START TRANSACTION READ ONLY block on MySQL 5.6.5+ unless MYSQL_LEGACY_DISABLE_READ_ONLY_TRANSACTIONS=true.',
+    description: 'Runs exactly one SELECT supplied in sql. Rejects SELECT INTO and locking reads; truncates by MYSQL_LEGACY_MAX_ROWS and MYSQL_LEGACY_MAX_RESULT_BYTES. On MySQL 5.6.5+ wraps in START TRANSACTION READ ONLY unless MYSQL_LEGACY_DISABLE_READ_ONLY_TRANSACTIONS=true. For columns use mysql_legacy_describe_table; for CREATE TABLE text use mysql_legacy_show_create_table; for writes use mysql_legacy_insert, mysql_legacy_update, or mysql_legacy_delete.',
+    annotations: readOnlyAnnotations,
     inputSchema: z.object({
       sql: selectQuerySchema.describe('One MySQL 5.1-compatible SELECT statement.')
     })
@@ -342,7 +358,8 @@ export function createServer() {
   }));
 
   server.registerTool('mysql_legacy_insert', {
-    description: 'Executes exactly one INSERT statement. Disabled unless MYSQL_LEGACY_ALLOW_INSERT=true.',
+    description: 'Runs exactly one INSERT supplied in sql. Off unless MYSQL_LEGACY_ALLOW_INSERT=true. Returns insertId and affectedRows. INSERT ... ON DUPLICATE KEY UPDATE is accepted and can overwrite existing rows. For UPDATE/DELETE/DDL use mysql_legacy_update, mysql_legacy_delete, or mysql_legacy_ddl.',
+    annotations: mutatingAnnotations,
     inputSchema: z.object({
       sql: selectQuerySchema.describe('One MySQL INSERT statement.')
     })
@@ -356,7 +373,8 @@ export function createServer() {
   }));
 
   server.registerTool('mysql_legacy_update', {
-    description: 'Executes exactly one UPDATE statement. A WHERE clause is required and cannot be disabled. Disabled unless MYSQL_LEGACY_ALLOW_UPDATE=true.',
+    description: 'Runs exactly one UPDATE supplied in sql. WHERE is required and cannot be disabled. Off unless MYSQL_LEGACY_ALLOW_UPDATE=true. Returns affectedRows and changedRows. To empty a table use TRUNCATE via mysql_legacy_ddl, not a WHERE-less UPDATE.',
+    annotations: mutatingAnnotations,
     inputSchema: z.object({
       sql: selectQuerySchema.describe('One MySQL UPDATE statement with a WHERE clause.')
     })
@@ -370,7 +388,8 @@ export function createServer() {
   }));
 
   server.registerTool('mysql_legacy_delete', {
-    description: 'Executes exactly one DELETE statement. A WHERE clause is required and cannot be disabled. Disabled unless MYSQL_LEGACY_ALLOW_DELETE=true.',
+    description: 'Runs exactly one DELETE supplied in sql. WHERE is required and cannot be disabled. Off unless MYSQL_LEGACY_ALLOW_DELETE=true. Returns affectedRows. To empty a table use TRUNCATE via mysql_legacy_ddl, not a WHERE-less DELETE.',
+    annotations: mutatingAnnotations,
     inputSchema: z.object({
       sql: selectQuerySchema.describe('One MySQL DELETE statement with a WHERE clause.')
     })
@@ -384,9 +403,10 @@ export function createServer() {
   }));
 
   server.registerTool('mysql_legacy_ddl', {
-    description: 'Executes exactly one table-level CREATE, ALTER, DROP, TRUNCATE, or RENAME statement. Disabled unless MYSQL_LEGACY_ALLOW_DDL=true.',
+    description: 'Runs exactly one table-level CREATE, ALTER, DROP, TRUNCATE, or RENAME supplied in sql. Off unless MYSQL_LEGACY_ALLOW_DDL=true. DROP and TRUNCATE are irreversible. Rejects DROP DATABASE, views, and indexes. For row changes use mysql_legacy_insert, mysql_legacy_update, or mysql_legacy_delete.',
+    annotations: mutatingAnnotations,
     inputSchema: z.object({
-      sql: selectQuerySchema.describe('One MySQL table-level DDL statement.')
+      sql: selectQuerySchema.describe('One MySQL table-level DDL statement: CREATE/ALTER/DROP/TRUNCATE/RENAME TABLE.')
     })
   }, ({ sql }) => safely(async () => {
     if (!booleanEnv('MYSQL_LEGACY_ALLOW_DDL', false)) {
@@ -398,9 +418,10 @@ export function createServer() {
   }));
 
   server.registerTool('mysql_legacy_list_databases', {
-    description: 'Lists databases using SHOW DATABASES. System databases are hidden by default according to MYSQL_LEGACY_HIDE_SYSTEM_DATABASES.',
+    description: 'Lists database names via SHOW DATABASES. Hides mysql and information_schema unless include_system_databases=true (or MYSQL_LEGACY_HIDE_SYSTEM_DATABASES=false). Then pass a name to mysql_legacy_list_tables. Does not list tables or columns.',
+    annotations: readOnlyAnnotations,
     inputSchema: z.object({
-      include_system_databases: z.boolean().optional().describe('Overrides MYSQL_LEGACY_HIDE_SYSTEM_DATABASES for this call.')
+      include_system_databases: z.boolean().optional().describe('When true, include mysql and information_schema for this call. Overrides MYSQL_LEGACY_HIDE_SYSTEM_DATABASES.')
     })
   }, ({ include_system_databases }) => safely(async () => {
     const hideSystem = include_system_databases === undefined
@@ -412,16 +433,18 @@ export function createServer() {
   }));
 
   server.registerTool('mysql_legacy_list_tables', {
-    description: 'Lists base tables and views with SHOW FULL TABLES FROM <database>. Read-only.',
-    inputSchema: z.object({ database: identifierSchema })
+    description: 'Lists base tables and views in one database via SHOW FULL TABLES FROM database. Pass database. For column types use mysql_legacy_describe_table; for CREATE TABLE text use mysql_legacy_show_create_table; for keys use mysql_legacy_list_indexes. To list databases first, use mysql_legacy_list_databases.',
+    annotations: readOnlyAnnotations,
+    inputSchema: z.object({ database: databaseIdentifier })
   }, ({ database }) => safely(async () => {
     const rows = await executeQuery(schemaQueries(database, 'unused').listTables);
     return { database, tables: tableRows(rows) };
   }));
 
   server.registerTool('mysql_legacy_describe_table', {
-    description: 'Lists columns with SHOW FULL COLUMNS FROM <database>.<table>, including each column\'s collation. Read-only.',
-    inputSchema: z.object({ database: identifierSchema, table: identifierSchema })
+    description: 'Lists columns for database.table via SHOW FULL COLUMNS, including type, nullability, keys, comments, and collation. Use this for per-column metadata. For the full CREATE TABLE text and default charset use mysql_legacy_show_create_table. For index column order use mysql_legacy_list_indexes.',
+    annotations: readOnlyAnnotations,
+    inputSchema: z.object({ database: databaseIdentifier, table: tableIdentifier })
   }, ({ database, table }) => safely(async () => {
     const rows = await executeQuery(schemaQueries(database, table).describeTable);
     return {
@@ -441,8 +464,9 @@ export function createServer() {
   }));
 
   server.registerTool('mysql_legacy_show_create_table', {
-    description: 'Returns the definition from SHOW CREATE TABLE <database>.<table>, plus the table\'s default charset parsed out for convenience. Read-only.',
-    inputSchema: z.object({ database: identifierSchema, table: identifierSchema })
+    description: 'Returns SHOW CREATE TABLE for database.table plus the parsed default charset. Use this for DDL text. For per-column types and collation use mysql_legacy_describe_table. For unique/non-unique keys use mysql_legacy_list_indexes.',
+    annotations: readOnlyAnnotations,
+    inputSchema: z.object({ database: databaseIdentifier, table: tableIdentifier })
   }, ({ database, table }) => safely(async () => {
     const row = (await executeQuery(schemaQueries(database, table).showCreateTable))[0] ?? {};
     const createStatement = row['Create Table'] ?? row['Create View'] ?? Object.values(row)[1] ?? null;
@@ -455,8 +479,9 @@ export function createServer() {
   }));
 
   server.registerTool('mysql_legacy_list_indexes', {
-    description: 'Lists indexes with SHOW INDEX FROM <database>.<table>. Read-only.',
-    inputSchema: z.object({ database: identifierSchema, table: identifierSchema })
+    description: 'Lists indexes for database.table via SHOW INDEX (key name, columns, uniqueness, type). Use this for keys. For column types use mysql_legacy_describe_table; for full DDL use mysql_legacy_show_create_table.',
+    annotations: readOnlyAnnotations,
+    inputSchema: z.object({ database: databaseIdentifier, table: tableIdentifier })
   }, ({ database, table }) => safely(async () => {
     const rows = await executeQuery(schemaQueries(database, table).listIndexes);
     return {

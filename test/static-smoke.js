@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import {
+  createServer,
   limitSelectRows,
   parseServerVersion,
   qualifiedTable,
@@ -120,5 +123,27 @@ assert.equal(
 assert.equal(tableCharsetFromCreateStatement('CREATE VIEW `v` AS SELECT 1'), null);
 assert.equal(tableCharsetFromCreateStatement(null), null);
 assert.equal(tableCharsetFromCreateStatement(undefined), null);
+
+const mcpServer = createServer();
+const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+const client = new Client({ name: 'static-smoke', version: '0' });
+await mcpServer.connect(serverTransport);
+await client.connect(clientTransport);
+const { tools } = await client.listTools();
+await client.close();
+await mcpServer.close();
+
+assert.equal(tools.length, 11);
+const byName = Object.fromEntries(tools.map((tool) => [tool.name, tool]));
+assert.equal(byName.mysql_legacy_ping.annotations.readOnlyHint, true);
+assert.equal(byName.mysql_legacy_insert.annotations.destructiveHint, true);
+assert.equal(byName.mysql_legacy_update.annotations.destructiveHint, true);
+assert.equal(byName.mysql_legacy_ddl.annotations.readOnlyHint, false);
+assert.match(byName.mysql_legacy_select.description, /\bsql\b/);
+assert.match(byName.mysql_legacy_describe_table.description, /mysql_legacy_show_create_table/);
+assert.match(byName.mysql_legacy_show_create_table.description, /mysql_legacy_describe_table/);
+assert.match(byName.mysql_legacy_list_indexes.description, /mysql_legacy_describe_table/);
+assert.equal(byName.mysql_legacy_list_tables.inputSchema.properties.database.description.includes('database'), true);
+assert.equal(byName.mysql_legacy_describe_table.inputSchema.properties.table.description.includes('table'), true);
 
 console.log('Static smoke test passed.');
