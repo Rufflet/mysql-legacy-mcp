@@ -4,6 +4,7 @@
 [![npm](https://img.shields.io/npm/v/mysql-legacy-mcp.svg)](https://www.npmjs.com/package/mysql-legacy-mcp)
 [![License: MIT](https://img.shields.io/github/license/Rufflet/mysql-legacy-mcp)](https://github.com/Rufflet/mysql-legacy-mcp/blob/main/LICENSE)
 [![Glama](https://glama.ai/mcp/servers/@Rufflet/mysql-legacy-mcp/badges/score.svg)](https://glama.ai/mcp/servers/@Rufflet/mysql-legacy-mcp)
+[![TensorBlock](https://mcp-index.tensorblock.co/v1/servers/github-rufflet-mysql-legacy-mcp-aebaf858/badge.svg)](https://tensorblock.co/mcp/servers/github-rufflet-mysql-legacy-mcp-aebaf858)
 
 MCP server for legacy MySQL 5.0–5.6 databases through stdio. The package is on npm as `mysql-legacy-mcp` and in the [official MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.Rufflet/mysql-legacy-mcp) as `io.github.Rufflet/mysql-legacy-mcp`.
 
@@ -30,6 +31,7 @@ Installation is always local stdio via npm (`npx -y mysql-legacy-mcp`). Director
 - [npm](https://www.npmjs.com/package/mysql-legacy-mcp)
 - [Official MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.Rufflet/mysql-legacy-mcp)
 - [Glama](https://glama.ai/mcp/servers/@Rufflet/mysql-legacy-mcp)
+- [TensorBlock MCP Index](https://tensorblock.co/mcp/servers/github-rufflet-mysql-legacy-mcp-aebaf858)
 
 Maintainer submission status for other directories is in [docs/RELEASE_CHECKLIST.md](docs/RELEASE_CHECKLIST.md).
 
