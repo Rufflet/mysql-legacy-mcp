@@ -33,6 +33,7 @@ Installation is always local stdio via npm (`npx -y mysql-legacy-mcp`). Director
 - [Glama](https://glama.ai/mcp/servers/@Rufflet/mysql-legacy-mcp)
 - [TensorBlock MCP Index](https://tensorblock.co/mcp/servers/github-rufflet-mysql-legacy-mcp-aebaf858)
 - [Awesome MCP Servers](https://github.com/punkpeye/awesome-mcp-servers#databases)
+- [Awesome MCP ZH](https://github.com/yzfly/Awesome-MCP-ZH)
 
 Maintainer submission status for other directories is in [docs/RELEASE_CHECKLIST.md](docs/RELEASE_CHECKLIST.md).
 
